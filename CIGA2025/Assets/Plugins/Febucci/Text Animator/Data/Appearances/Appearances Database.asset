@@ -12,4 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 103e863f5c0347be8a512f431aaf5ec1, type: 3}
   m_Name: Appearances Database
   m_EditorClassIdentifier: 
-  data: []
+  data:
+  - {fileID: 11400000, guid: ff217d147b05ca1428dd007b798eddeb, type: 2}
+  - {fileID: 11400000, guid: 702b4ecf2cd974640a25d2d446aa91fc, type: 2}
+  - {fileID: 11400000, guid: 560bbdebfc44f1944950561c4e223290, type: 2}
+  - {fileID: 11400000, guid: be3e2578dc7ad9e4aa252b4c48f68d30, type: 2}
+  - {fileID: 11400000, guid: 6a4fc8eca10c477448697e6b3b047ea7, type: 2}
+  - {fileID: 11400000, guid: 9c79608693aa95c40beed141ccd3144e, type: 2}
+  - {fileID: 11400000, guid: 176e31082c79e5c4bb27c7c28fc790a5, type: 2}
+  - {fileID: 11400000, guid: 1988754fa14294e4fb325f9e37bf03a5, type: 2}
