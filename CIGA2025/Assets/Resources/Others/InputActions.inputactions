@@ -1,0 +1,16 @@
+{
+    "name": "InputActions",
+    "maps": [],
+    "controlSchemes": [
+        {
+            "name": "PlayerControl",
+            "bindingGroup": "PlayerControl",
+            "devices": []
+        },
+        {
+            "name": "UIControl",
+            "bindingGroup": "UIControl",
+            "devices": []
+        }
+    ]
+}
