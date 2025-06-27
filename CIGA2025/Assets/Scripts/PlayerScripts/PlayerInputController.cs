@@ -18,7 +18,6 @@ public class PlayerInputController : MonoBehaviour
             if (_instance != null) 
                 return _instance;
 
-            // Only create at runtime, never in Editor edit-mode
             if (Application.isPlaying)
             {
                 var singletonObject = new GameObject(nameof(PlayerInputController));
@@ -33,7 +32,6 @@ public class PlayerInputController : MonoBehaviour
 
     private void Awake()
     {
-        // Standard singleton guard
         if (_instance == null)
         {
             _instance = this;
@@ -63,35 +61,14 @@ public class PlayerInputController : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Clean up the actions
         InputActions?.Dispose();
 
-        // Only clear the static if *this* was the instance
         if (_instance == this)
             _instance = null;
     }
 
-#if UNITY_EDITOR
-    // This fires when you exit Play mode in the Editor
-    [UnityEditor.InitializeOnLoadMethod]
-    private static void RegisterPlayModeCleanup()
-    {
-        EditorApplication.playModeStateChanged += state =>
-        {
-            if (state == PlayModeStateChange.ExitingPlayMode)
-            {
-                // Find and immediately destroy any leftover PlayerInputController
-                var leftover = FindObjectOfType<PlayerInputController>();
-                if (leftover)
-                    DestroyImmediate(leftover.gameObject);
-            }
-        };
-    }
-#endif
-
     private void OnApplicationQuit()
     {
-        // also clear on build/runtime exit
         if (_instance == this) 
             _instance = null;
     }
