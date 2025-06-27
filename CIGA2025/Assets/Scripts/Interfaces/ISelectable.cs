@@ -9,5 +9,5 @@ public interface ISelectable
     /// <summary>
     /// 获取用于定义选择框视觉效果的边界。
     /// </summary>
-    Bounds SelectionBounds { get; }
+    Bounds SelectionBounds { get; set; }
 }

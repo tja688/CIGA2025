@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class PlayerInputController : MonoBehaviour
 {
@@ -8,11 +11,20 @@ public class PlayerInputController : MonoBehaviour
     {
         get
         {
-            if (_instance) return _instance;
-            _instance = FindObjectOfType<PlayerInputController>(); 
-            if (_instance) return _instance;
-            var singletonObject = new GameObject(nameof(PlayerInputController));
-            _instance = singletonObject.AddComponent<PlayerInputController>();
+            if (_instance != null) 
+                return _instance;
+
+            _instance = FindObjectOfType<PlayerInputController>();
+            if (_instance != null) 
+                return _instance;
+
+            // Only create at runtime, never in Editor edit-mode
+            if (Application.isPlaying)
+            {
+                var singletonObject = new GameObject(nameof(PlayerInputController));
+                _instance = singletonObject.AddComponent<PlayerInputController>();
+                DontDestroyOnLoad(singletonObject);
+            }
             return _instance;
         }
     }
@@ -21,16 +33,17 @@ public class PlayerInputController : MonoBehaviour
 
     private void Awake()
     {
-        if (!_instance)
+        // Standard singleton guard
+        if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(this.gameObject);
+            DontDestroyOnLoad(gameObject);
         }
         else if (_instance != this)
         {
-            Debug.LogWarning($"PlayerInputController: 场景中已存在实例 '{_instance.gameObject.name}'。正在销毁此重复实例 '{this.gameObject.name}'。");
-            Destroy(this.gameObject);
-            return; 
+            Debug.LogWarning($"Duplicate PlayerInputController on '{name}', destroying.");
+            Destroy(gameObject);
+            return;
         }
 
         InputActions = new GameInput();
@@ -50,7 +63,37 @@ public class PlayerInputController : MonoBehaviour
 
     private void OnDestroy()
     {
+        // Clean up the actions
         InputActions?.Dispose();
+
+        // Only clear the static if *this* was the instance
+        if (_instance == this)
+            _instance = null;
+    }
+
+#if UNITY_EDITOR
+    // This fires when you exit Play mode in the Editor
+    [UnityEditor.InitializeOnLoadMethod]
+    private static void RegisterPlayModeCleanup()
+    {
+        EditorApplication.playModeStateChanged += state =>
+        {
+            if (state == PlayModeStateChange.ExitingPlayMode)
+            {
+                // Find and immediately destroy any leftover PlayerInputController
+                var leftover = FindObjectOfType<PlayerInputController>();
+                if (leftover)
+                    DestroyImmediate(leftover.gameObject);
+            }
+        };
+    }
+#endif
+
+    private void OnApplicationQuit()
+    {
+        // also clear on build/runtime exit
+        if (_instance == this) 
+            _instance = null;
     }
 
     /// <summary>

@@ -1,18 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemBase : MonoBehaviour
+public abstract class ItemBase : MonoBehaviour, ISelectable
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public Bounds SelectionBounds { get; set; }
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        
+        SelectionBounds =  GetComponent<BoxCollider2D>().bounds;
     }
 }
