@@ -3,7 +3,6 @@ using UnityEngine.InputSystem;
 
 public class PlayerInputController : MonoBehaviour
 {
-    // --- 单例模式实现 ---
     private static PlayerInputController _instance;
     public static PlayerInputController Instance
     {
@@ -18,11 +17,10 @@ public class PlayerInputController : MonoBehaviour
         }
     }
 
-    public InputActions InputActions { get; private set; }
+    public GameInput InputActions { get; private set; }
 
     private void Awake()
     {
-        // --- 单例模式 Awake 处理 ---
         if (!_instance)
         {
             _instance = this;
@@ -35,19 +33,19 @@ public class PlayerInputController : MonoBehaviour
             return; 
         }
 
-        InputActions = new InputActions();
+        InputActions = new GameInput();
     }
 
     private void OnEnable()
     {
-        // ActivateUIControls();
-        ActivatePlayerControls();
+        InputActions.PlayerControl.Enable();
+        InputActions.UIControl.Enable();
     }
 
     private void OnDisable()
     {
-        InputActions?.PlayerControlScheme
-        InputActions?.UIControlScheme.Disable();
+        InputActions?.PlayerControl.Disable();
+        InputActions?.UIControl.Disable();
     }
 
     private void OnDestroy()
@@ -55,9 +53,8 @@ public class PlayerInputController : MonoBehaviour
         InputActions?.Dispose();
     }
 
-    // --- 公开的 API 用于切换输入 Action Map ---
     /// <summary>
-    /// 激活玩家控制相关的输入 (例如：移动、跳跃等)。
+    /// 激活玩家控制相关的输入。
     /// 同时通常会禁用UI控制。
     /// </summary>
     public void ActivatePlayerControls()
@@ -68,7 +65,7 @@ public class PlayerInputController : MonoBehaviour
     }
 
     /// <summary>
-    /// 激活UI相关的输入 (例如：导航、确认、取消等)。
+    /// 激活UI相关的输入。
     /// 同时通常会禁用玩家控制。
     /// </summary>
     public void ActivateUIControls()
@@ -77,6 +74,4 @@ public class PlayerInputController : MonoBehaviour
         InputActions.UIControl.Enable();
         InputActions.PlayerControl.Disable();
     }
-    // --- API 结束 ---
-    
 }
