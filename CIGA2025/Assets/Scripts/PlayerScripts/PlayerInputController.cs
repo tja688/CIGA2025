@@ -1,19 +1,40 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class PlayerInputController : MonoBehaviour
 {
     private static PlayerInputController _instance;
+    private static bool isShuttingDown = false; 
+    private static readonly object _lock = new object(); 
+
     public static PlayerInputController Instance
     {
         get
         {
-            if (_instance) return _instance;
-            _instance = FindObjectOfType<PlayerInputController>(); 
-            if (_instance) return _instance;
-            var singletonObject = new GameObject(nameof(PlayerInputController));
-            _instance = singletonObject.AddComponent<PlayerInputController>();
-            return _instance;
+            if (isShuttingDown)
+            {
+                return null;
+            }
+
+            lock (_lock) 
+            {
+                if (_instance != null)
+                    return _instance;
+
+                _instance = FindObjectOfType<PlayerInputController>();
+                if (_instance != null)
+                    return _instance;
+
+                if (Application.isPlaying)
+                {
+                    var singletonObject = new GameObject(nameof(PlayerInputController));
+                    _instance = singletonObject.AddComponent<PlayerInputController>();
+                }
+                return _instance;
+            }
         }
     }
 
@@ -21,16 +42,16 @@ public class PlayerInputController : MonoBehaviour
 
     private void Awake()
     {
-        if (!_instance)
+        if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(this.gameObject);
+            DontDestroyOnLoad(gameObject);
         }
         else if (_instance != this)
         {
-            Debug.LogWarning($"PlayerInputController: 场景中已存在实例 '{_instance.gameObject.name}'。正在销毁此重复实例 '{this.gameObject.name}'。");
-            Destroy(this.gameObject);
-            return; 
+            Debug.LogWarning($"Duplicate PlayerInputController on '{name}', destroying.");
+            Destroy(gameObject);
+            return;
         }
 
         InputActions = new GameInput();
@@ -50,13 +71,24 @@ public class PlayerInputController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (_instance == this)
+        {
+            isShuttingDown = true; 
+        }
+
         InputActions?.Dispose();
+        
+        if (_instance == this)
+            _instance = null;
     }
 
-    /// <summary>
-    /// 激活玩家控制相关的输入。
-    /// 同时通常会禁用UI控制。
-    /// </summary>
+    private void OnApplicationQuit()
+    {
+        isShuttingDown = true; 
+        if (_instance == this) 
+            _instance = null;
+    }
+
     public void ActivatePlayerControls()
     {
         if (InputActions == null) return;
@@ -64,10 +96,6 @@ public class PlayerInputController : MonoBehaviour
         InputActions.UIControl.Disable();
     }
 
-    /// <summary>
-    /// 激活UI相关的输入。
-    /// 同时通常会禁用玩家控制。
-    /// </summary>
     public void ActivateUIControls()
     {
         if (InputActions == null) return;
