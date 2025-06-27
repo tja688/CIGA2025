@@ -25,7 +25,7 @@ public class IntuitiveAudioTester : MonoBehaviour
         {
             StopLastTrack();
             Debug.Log("【2】开始循环播放...");
-            _lastPlayedTrackId = AudioManager.Instance.Play(testConfig, new PlaybackSettings { isLooping = true });
+            _lastPlayedTrackId = AudioManager.Instance.Play(testConfig, true);
         }
         
         // 按 6: 播放2倍音量音轨，并记录ID
@@ -33,18 +33,9 @@ public class IntuitiveAudioTester : MonoBehaviour
         {
             StopLastTrack();
             Debug.Log("【6】播放2倍音量音轨...");
-            _lastPlayedTrackId = AudioManager.Instance.Play(testConfig, new PlaybackSettings { volumeMultiplier = 2.0f });
+            _lastPlayedTrackId = AudioManager.Instance.Play(testConfig,false, 0.2f);
         }
-
-        // 按 7: 播放带淡入淡出的“一次性”音效 (通常无需控制，不记录ID)
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            Debug.Log("【7】播放“一次性”淡入淡出音效...");
-            var settings = new PlaybackSettings { fadeInDuration = 0.5f };
-            AudioManager.Instance.Play(testConfig, settings, 0.5f);
-        }
-
-
+        
         // 【控制】(始终控制最后一个播放的音轨)
         // 按 3: 暂停
         if (Input.GetKeyDown(KeyCode.Alpha3))
@@ -70,7 +61,7 @@ public class IntuitiveAudioTester : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
             Debug.Log("【5】停止...");
-            StopLastTrack(0.5f);
+            StopLastTrack();
         }
     }
     
@@ -92,7 +83,6 @@ public class IntuitiveAudioTester : MonoBehaviour
         GUI.Label(new Rect(200, 290, 290, 20), "【4】恢复当前可控音轨(淡入)");
         GUI.Label(new Rect(200, 310, 290, 20), "【5】停止当前可控音轨(淡出)");
         GUI.Label(new Rect(200, 340, 290, 20), "【6】播放一次性音效(2倍音量)");
-        GUI.Label(new Rect(200, 360, 290, 20), "【7】播放一次性音效(淡入/淡出)");
         
         if (_lastPlayedTrackId != -1)
         {
