@@ -1,43 +1,45 @@
-// ArrowView.cs (修正坐标系Bug版本)
+// ArrowView.cs
 using UnityEngine;
 
 public class ArrowView : MonoBehaviour
 {
     [SerializeField] private Transform arrowHead;
     [SerializeField] private LineRenderer lineRenderer;
-    [SerializeField] private float arrowHeadOffset = 0.5f;
-    
-    public void Setup(Vector3 startPos)
+    [SerializeField] private float arrowHeadOffset = 0.5f; // 可根据箭头头部大小调整
+
+    // 【重要】更新方法现在必须接收起点和终点
+    public void UpdateArrow(Vector3 worldStartPosition, Vector3 worldEndPosition)
     {
-        // 将整个预制体（作为容器）放置在世界坐标的起点
-        transform.position = startPos;
-        // 初始化时，让箭头指向自己，避免闪烁
-        UpdateArrow(startPos);
-    }
+        // 1. 让尾巴跟随：将整个视觉容器移动到起点
+        transform.position = worldStartPosition;
 
-    // 每帧更新箭头指向和长度（传入世界坐标的终点）
-    public void UpdateArrow(Vector3 worldEndPosition)
-    {
-        // --- 关键修正 ---
-        // 将世界坐标的鼠标位置，转换为此脚本所在对象的本地坐标
-        Vector3 localEndPosition = transform.InverseTransformPoint(worldEndPosition);
+        // 2. 计算方向和距离（在世界空间中）
+        Vector3 direction = worldEndPosition - worldStartPosition;
+        float distance = direction.magnitude;
 
-        // 因为起点是(0,0,0)，所以方向向量就是本地终点坐标
-        Vector3 direction = localEndPosition; 
-
-        // 设置线条的终点（在本地坐标系中）
-        lineRenderer.SetPosition(0, Vector3.zero); // 本地起点永远是(0,0,0)
-        // 使用本地方向和距离来计算线条终点
-        lineRenderer.SetPosition(1, direction.normalized * (direction.magnitude - arrowHeadOffset));
-
-        // 设置箭头头部的本地位置
-        arrowHead.localPosition = localEndPosition;
-
-        // 让箭头头部的"右方"(x轴)朝向目标方向（在本地坐标系中）
-        if (direction != Vector3.zero)
+        // 如果距离太近，就不用显示了，避免计算错误
+        if (distance < 0.1f) 
         {
-            // 在本地坐标系中，我们希望头部的“up”方向是(0,0,1)，"right"方向是我们的direction
-            arrowHead.localRotation = Quaternion.LookRotation(Vector3.forward, direction);
+            lineRenderer.enabled = false;
+            arrowHead.gameObject.SetActive(false);
+            return;
         }
+        lineRenderer.enabled = true;
+        arrowHead.gameObject.SetActive(true);
+
+
+        // 3. 更新LineRenderer
+        // 它的坐标是本地的，所以终点就是方向向量本身
+        lineRenderer.SetPosition(0, Vector3.zero);
+        lineRenderer.SetPosition(1, transform.InverseTransformDirection(direction.normalized) * (distance - arrowHeadOffset));
+
+        // 4. 更新箭头头部
+        // 头部的位置就是世界终点，所以我们需要计算它的本地位置
+        arrowHead.position = worldEndPosition;
+        
+        // 5. 【核心】使用Atan2进行旋转
+        // 这个计算依赖于你的箭头精灵图片默认是朝向右方（X轴正方向）的
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        arrowHead.rotation = Quaternion.Euler(0, 0, angle);
     }
 }

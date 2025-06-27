@@ -1,3 +1,5 @@
+// ISelectable.cs
+
 using UnityEngine;
 
 /// <summary>
@@ -8,6 +10,7 @@ public interface ISelectable
 {
     /// <summary>
     /// 获取用于定义选择框视觉效果的边界。
+    /// 【修改】这是一个只读属性，动态返回当前的边界。
     /// </summary>
-    Bounds SelectionBounds { get; set; }
+    Bounds SelectionBounds { get; } // <--- 修改这里，去掉 set;
 }

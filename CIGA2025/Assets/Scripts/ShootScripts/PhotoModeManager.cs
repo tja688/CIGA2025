@@ -1,38 +1,14 @@
+// PhotoModeManager.cs
 using UnityEngine;
-using UnityEngine.InputSystem; // 仍然需要此命名空间来访问回调上下文
+using UnityEngine.InputSystem;
 
-/// <summary>
-/// 拍照模式管理器（单例） - V2 (已集成 PlayerInputController)
-/// 负责处理拍照模式的进入/退出、光标切换以及状态管理。
-/// 输入事件通过 PlayerInputController 单例来订阅。
-/// </summary>
 public class PhotoModeManager : MonoBehaviour
 {
-    #region 单例模式 (Singleton)
     public static PhotoModeManager Instance { get; private set; }
-    #endregion
 
-    #region 公开状态 (Public State)
-    public bool IsPhotoMode { get; set; }
-    #endregion
+    public bool IsPhotoMode { get; private set; } // 将 set 设为 private，只能通过方法切换
 
-    #region 光标设置 (Cursor Settings)
-    [Header("光标设置 (Cursor Settings)")]
-    [Tooltip("在摄像模式下要显示的自定义光标纹理")]
-    [SerializeField] private Texture2D photoCursorTexture;
-    [Tooltip("自定义光标的显示尺寸")]
-    [SerializeField] private Vector2 photoCursorSize = new Vector2(64f, 64f);
-    [Tooltip("自定义光标相对于真实鼠标位置的偏移量")]
-    [SerializeField] private Vector2 photoCursorOffset;
-    #endregion
-
-    #region 调试 (Debug)
-    [Header("调试 (Debug)")]
-    [Tooltip("勾选后，进入摄像模式时会同时显示系统光标和自定义光标，便于调整偏移和大小。")]
-    [SerializeField] private bool isDebugMode = false;
-    #endregion
-
-    #region Unity生命周期方法 (Lifecycle Methods)
+    // 【核心改动】所有与光标相关的 [SerializeField] 和 OnGUI 方法都已被移除
 
     private void Awake()
     {
@@ -51,10 +27,6 @@ public class PhotoModeManager : MonoBehaviour
         {
             PlayerInputController.Instance.InputActions.PlayerControl.Shoot.performed += TogglePhotoModeViaInput;
         }
-        else
-        {
-            Debug.LogError("PhotoModeManager: 未找到 PlayerInputController 实例，拍照模式的输入将无法工作！");
-        }
     }
 
     private void OnDisable()
@@ -65,29 +37,6 @@ public class PhotoModeManager : MonoBehaviour
         }
     }
 
-    private void OnGUI()
-    {
-        if (IsPhotoMode && photoCursorTexture != null)
-        {
-            Vector2 mousePos = Event.current.mousePosition;
-            Rect cursorRect = new Rect(
-                mousePos.x + photoCursorOffset.x,
-                mousePos.y + photoCursorOffset.y,
-                photoCursorSize.x,
-                photoCursorSize.y
-            );
-            GUI.depth = -999;
-            GUI.DrawTexture(cursorRect, photoCursorTexture);
-        }
-    }
-
-    #endregion
-
-    #region 核心功能方法 (Core Methods)
-
-    /// <summary>
-    /// 响应输入事件的回调函数
-    /// </summary>
     private void TogglePhotoModeViaInput(InputAction.CallbackContext context)
     {
         TogglePhotoMode();
@@ -100,32 +49,10 @@ public class PhotoModeManager : MonoBehaviour
     {
         IsPhotoMode = !IsPhotoMode;
 
-        if (IsPhotoMode)
+        // 【核心改动】不再自己操作 Cursor.visible，而是向 CursorManager 发送通知
+        if (CursorManager.Instance != null)
         {
-            EnterPhotoMode();
-        }
-        else
-        {
-            ExitPhotoMode();
+            CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
     }
-
-    private void EnterPhotoMode()
-    {
-        if (!isDebugMode)
-        {
-            Cursor.visible = false;
-        }
-        else
-        {
-            Cursor.visible = true;
-        }
-    }
-
-    private void ExitPhotoMode()
-    {
-        Cursor.visible = true;
-    }
-
-    #endregion
 }

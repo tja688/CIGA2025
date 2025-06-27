@@ -49,6 +49,7 @@ public class SelectionManager : MonoBehaviour
 
     private void Update()
     {
+        // 如果不是拍照模式，则直接取消选择并隐藏框选框
         if (!PhotoModeManager.Instance || !PhotoModeManager.Instance.IsPhotoMode)
         {
             if (_currentSelectedObject != null)
@@ -59,13 +60,37 @@ public class SelectionManager : MonoBehaviour
             return;
         }
 
+        // --- 核心逻辑重构 ---
 
+        // 第1步：每帧都检测鼠标下方是否有可选择的对象
         Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        ISelectable objectUnderMouse = FindClosestSelectable(mouseWorldPos);
 
-        ISelectable closestObject = FindClosestSelectable(mouseWorldPos);
+        // 第2步：将检测到的对象直接赋值为当前选择的对象
+        // 注意：这里的 _currentSelectedObject 现在代表“鼠标正悬停的对象”
+        _currentSelectedObject = objectUnderMouse;
+
+        // 第3步：根据当前是否选中对象，来决定框选框的状态
+        // 这段逻辑现在每帧都会执行
+        if (_currentSelectedObject != null)
+        {
+            // 如果有对象被选中：
+            // a. 持续更新框选框的位置，使其平滑跟随对象
+            _selectionBoxInstance.transform.position = _currentSelectedObject.SelectionBounds.center;
         
-        UpdateSelection(closestObject);
+            // b. 持续更新框选框的大小（以防对象大小也发生变化）
+            _selectionBoxInstance.UpdateBounds(_currentSelectedObject.SelectionBounds);
+
+            // c. 确保框选框是可见的
+            _selectionBoxInstance.SetVisible(true);
+        }
+        else
+        {
+            // 如果没有对象被选中，则确保框选框是不可见的
+            _selectionBoxInstance.SetVisible(false);
+        }
     }
+
     #endregion
 
     
@@ -97,27 +122,7 @@ public class SelectionManager : MonoBehaviour
         }
         return closest;
     }
+    
 
-    /// <summary>
-    /// 更新当前的选择对象，并相应地更新视觉表现（框选框）。
-    /// </summary>
-    /// <param name="newSelection">新的选择对象，可以为 null</param>
-    private void UpdateSelection(ISelectable newSelection)
-    {
-        if (_currentSelectedObject != newSelection)
-        {
-            _currentSelectedObject = newSelection;
-
-            if (_currentSelectedObject != null)
-            {
-                _selectionBoxInstance.UpdateBounds(_currentSelectedObject.SelectionBounds);
-                _selectionBoxInstance.SetVisible(true);
-            }
-            else
-            {
-                _selectionBoxInstance.SetVisible(false);
-            }
-        }
-    }
     #endregion
 }
