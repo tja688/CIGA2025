@@ -16,7 +16,6 @@ public class PlayerInputController : MonoBehaviour
         {
             if (isShuttingDown)
             {
-                Debug.LogWarning("[Singleton] Instance 'PlayerInputController' already destroyed. Returning null.");
                 return null;
             }
 
