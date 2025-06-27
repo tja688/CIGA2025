@@ -9,7 +9,7 @@ public class PlayerInputController : MonoBehaviour
         get
         {
             if (_instance) return _instance;
-            _instance = FindObjectOfType<PlayerInputController>(); // 尝试查找现有实例
+            _instance = FindObjectOfType<PlayerInputController>(); 
             if (_instance) return _instance;
             var singletonObject = new GameObject(nameof(PlayerInputController));
             _instance = singletonObject.AddComponent<PlayerInputController>();
@@ -24,7 +24,7 @@ public class PlayerInputController : MonoBehaviour
         if (!_instance)
         {
             _instance = this;
-
+            DontDestroyOnLoad(this.gameObject);
         }
         else if (_instance != this)
         {
