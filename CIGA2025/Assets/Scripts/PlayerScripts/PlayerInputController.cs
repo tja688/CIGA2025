@@ -7,24 +7,35 @@ using UnityEditor;
 public class PlayerInputController : MonoBehaviour
 {
     private static PlayerInputController _instance;
+    private static bool isShuttingDown = false; 
+    private static readonly object _lock = new object(); 
+
     public static PlayerInputController Instance
     {
         get
         {
-            if (_instance != null) 
-                return _instance;
-
-            _instance = FindObjectOfType<PlayerInputController>();
-            if (_instance != null) 
-                return _instance;
-
-            if (Application.isPlaying)
+            if (isShuttingDown)
             {
-                var singletonObject = new GameObject(nameof(PlayerInputController));
-                _instance = singletonObject.AddComponent<PlayerInputController>();
-                DontDestroyOnLoad(singletonObject);
+                Debug.LogWarning("[Singleton] Instance 'PlayerInputController' already destroyed. Returning null.");
+                return null;
             }
-            return _instance;
+
+            lock (_lock) 
+            {
+                if (_instance != null)
+                    return _instance;
+
+                _instance = FindObjectOfType<PlayerInputController>();
+                if (_instance != null)
+                    return _instance;
+
+                if (Application.isPlaying)
+                {
+                    var singletonObject = new GameObject(nameof(PlayerInputController));
+                    _instance = singletonObject.AddComponent<PlayerInputController>();
+                }
+                return _instance;
+            }
         }
     }
 
@@ -61,22 +72,24 @@ public class PlayerInputController : MonoBehaviour
 
     private void OnDestroy()
     {
-        InputActions?.Dispose();
+        if (_instance == this)
+        {
+            isShuttingDown = true; 
+        }
 
+        InputActions?.Dispose();
+        
         if (_instance == this)
             _instance = null;
     }
 
     private void OnApplicationQuit()
     {
+        isShuttingDown = true; 
         if (_instance == this) 
             _instance = null;
     }
 
-    /// <summary>
-    /// 激活玩家控制相关的输入。
-    /// 同时通常会禁用UI控制。
-    /// </summary>
     public void ActivatePlayerControls()
     {
         if (InputActions == null) return;
@@ -84,10 +97,6 @@ public class PlayerInputController : MonoBehaviour
         InputActions.UIControl.Disable();
     }
 
-    /// <summary>
-    /// 激活UI相关的输入。
-    /// 同时通常会禁用玩家控制。
-    /// </summary>
     public void ActivateUIControls()
     {
         if (InputActions == null) return;
