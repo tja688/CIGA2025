@@ -60,6 +60,9 @@ public class PlayerHealth : MonoBehaviour
     {
         Debug.LogError("--- 玩家已死亡！游戏结束。 ---");
         this.gameObject.SetActive(false);
+        
+        Application.Quit();
+
     }
 
     #region [新增] GUI 血量显示

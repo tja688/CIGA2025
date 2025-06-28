@@ -236,6 +236,9 @@ public class BossAI : MonoBehaviour
         // 可以在这里停止所有活动，播放死亡动画等
         
         this.gameObject.SetActive(false);
+        
+        Application.Quit();
+
     }
 
     private void OnDestroy()
