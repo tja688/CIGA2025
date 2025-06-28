@@ -7,17 +7,14 @@ public class GameSettingsUI : MonoBehaviour
     [Header("Background Audio UI")]
     public Slider backgroundVolumeSlider;
     public Button backgroundMuteButton;
-    public Text backgroundMuteButtonText; // (可选) 用于显示 "静音"/"取消静音"
 
     [Header("SFX Audio UI")]
     public Slider sfxVolumeSlider;
     public Button sfxMuteButton;
-    public Text sfxMuteButtonText;
 
     [Header("UI Sounds Audio UI")]
     public Slider uiVolumeSlider;
     public Button uiMuteButton;
-    public Text uiMuteButtonText;
 
     void Start()
     {
@@ -38,7 +35,6 @@ public class GameSettingsUI : MonoBehaviour
         if (backgroundMuteButton != null)
         {
             backgroundMuteButton.onClick.AddListener(OnToggleBackgroundMute); // 调用本地方法更新UI
-            UpdateMuteButtonText(backgroundMuteButtonText, AudioManager.Instance.IsBackgroundMuted(), "背景");
         }
 
         // --- 初始化SFX音量UI ---
@@ -52,7 +48,6 @@ public class GameSettingsUI : MonoBehaviour
         if (sfxMuteButton != null)
         {
             sfxMuteButton.onClick.AddListener(OnToggleSFXMute);
-            UpdateMuteButtonText(sfxMuteButtonText, AudioManager.Instance.IsSFXMuted(), "音效");
         }
 
         // --- 初始化UI音效音量UI ---
@@ -66,7 +61,6 @@ public class GameSettingsUI : MonoBehaviour
         if (uiMuteButton != null)
         {
             uiMuteButton.onClick.AddListener(OnToggleUIMute);
-            UpdateMuteButtonText(uiMuteButtonText, AudioManager.Instance.IsUIMuted(), "界面");
         }
     }
 
@@ -74,7 +68,6 @@ public class GameSettingsUI : MonoBehaviour
     void OnToggleBackgroundMute()
     {
         AudioManager.Instance.ToggleBackgroundMute();
-        UpdateMuteButtonText(backgroundMuteButtonText, AudioManager.Instance.IsBackgroundMuted(), "背景");
         // (可选) 根据静音状态启用/禁用滑块
         if (backgroundVolumeSlider != null) backgroundVolumeSlider.interactable = !AudioManager.Instance.IsBackgroundMuted();
     }
@@ -82,22 +75,13 @@ public class GameSettingsUI : MonoBehaviour
     void OnToggleSFXMute()
     {
         AudioManager.Instance.ToggleSFXMute();
-        UpdateMuteButtonText(sfxMuteButtonText, AudioManager.Instance.IsSFXMuted(), "音效");
         if (sfxVolumeSlider != null) sfxVolumeSlider.interactable = !AudioManager.Instance.IsSFXMuted();
     }
 
     void OnToggleUIMute()
     {
         AudioManager.Instance.ToggleUIMute();
-        UpdateMuteButtonText(uiMuteButtonText, AudioManager.Instance.IsUIMuted(), "界面");
         if (uiVolumeSlider != null) uiVolumeSlider.interactable = !AudioManager.Instance.IsUIMuted();
     }
-
-    void UpdateMuteButtonText(Text buttonText, bool isMuted, string channelName)
-    {
-        if (buttonText != null)
-        {
-            buttonText.text = isMuted ? $"取消{channelName}静音" : $"{channelName}静音";
-        }
-    }
+    
 }

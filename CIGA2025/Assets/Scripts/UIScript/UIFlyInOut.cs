@@ -44,20 +44,18 @@ public class UIFlyInOut : MonoBehaviour
     public float offScreenBuffer = 5f; 
 
     private RectTransform rectTransform;
-    private Vector2 onScreenPosition;  // UI元素在屏幕上的最终位置
-    private Vector2 offScreenPosition; // UI元素在屏幕外用于动画的起始/结束位置
-    private Canvas rootCanvas;         // 用于计算边界的根Canvas
+    private Vector2 onScreenPosition;
+    private Vector2 offScreenPosition;
+    private Canvas rootCanvas;
 
     private bool isInitialized = false;
-    private bool isVisible = false;    // 标记UI当前是否在屏幕上（动画完成后）
-    private Tweener currentTweeter;    // 当前活动的Tweener
+    private bool isVisible = false;
+    private Tweener currentTweeter;
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
-
-        // 获取根Canvas，它用于精确计算屏幕边界
-        // 通常，UI元素是某个Canvas的子对象
+        
         var canvasInParent = GetComponentInParent<Canvas>();
         if (canvasInParent)
         {
@@ -67,102 +65,96 @@ public class UIFlyInOut : MonoBehaviour
         if (!rootCanvas)
         {
             Debug.LogError("UIFlyInOut: 未找到根Canvas! 离屏位置计算可能不准确。请确保此UI元素在Canvas下。", this);
-            // 如果找不到，可以尝试用Screen.width/height做后备，但这对于不同Canvas设置可能不准
         }
-
-        // 初始化位置信息（计算屏幕内和屏幕外的位置）
+        
+        // 立即初始化位置信息，即使gameObject初始非激活，也能在后续激活时正确工作
         InitializePositions();
 
         if (initializeOffScreen)
         {
-            // 立即将UI元素移动到计算好的屏幕外位置
             rectTransform.anchoredPosition = offScreenPosition;
-            // 初始状态认为是不可见的 (即使GameObject是Active的，但它在屏幕外)
             isVisible = false;
         }
         else
         {
-            // 如果不预先移到屏幕外，则认为其初始状态是可见的（在其设计位置）
             isVisible = true;
         }
     }
 
+    /// <summary>
+    /// 【核心改动】使用更稳健的方式计算屏幕外位置，以适应Canvas Scaler。
+    /// </summary>
     private void InitializePositions()
     {
-        if (isInitialized) return;
+        if (isInitialized || !rootCanvas) return;
 
         onScreenPosition = rectTransform.anchoredPosition;
 
-        var canvasRect = rootCanvas ? rootCanvas.GetComponent<RectTransform>().rect : new Rect(0, 0, Screen.width, Screen.height);
-        var panelSize = rectTransform.rect.size;
-        var panelPivot = rectTransform.pivot;
+        // 1. 获取Canvas的矩形和世界空间的四个角
+        Rect canvasRect = rootCanvas.GetComponent<RectTransform>().rect;
+        Vector3[] panelWorldCorners = new Vector3[4];
+        rectTransform.GetWorldCorners(panelWorldCorners);
 
-        var calculatedOffX = onScreenPosition.x;
-        var calculatedOffY = onScreenPosition.y;
+        // 2. 将世界空间的角转换为Canvas的本地坐标
+        Vector2 panelMinInCanvas = rootCanvas.transform.InverseTransformPoint(panelWorldCorners[0]); // 左下角
+        Vector2 panelMaxInCanvas = rootCanvas.transform.InverseTransformPoint(panelWorldCorners[2]); // 右上角
 
-        var canvasHalfWidth = canvasRect.width / 2f;
-        var canvasHalfHeight = canvasRect.height / 2f;
+        float calculatedOffX = onScreenPosition.x;
+        float calculatedOffY = onScreenPosition.y;
 
         switch (entryDirection)
         {
-            case UIFlyDirection.Down: // 从上方进入 (初始位置在Canvas顶部之外)
-                // 面板的底部边缘 与 Canvas的顶部边缘 对齐, 再向上推一个 buffer
-                calculatedOffY = canvasHalfHeight + (panelSize.y * panelPivot.y) + offScreenBuffer; // <--- 修改点
+            case UIFlyDirection.Down: // 从上方进入 (目标位置在屏幕顶部之上)
+                // 需要向上移动的距离 = Canvas顶部到面板顶部的距离 + 面板自身高度 + buffer
+                // (Canvas顶部Y - 面板顶部Y) + (面板顶部Y - 面板底部Y)
+                // = Canvas顶部Y - 面板底部Y
+                calculatedOffY = onScreenPosition.y + (canvasRect.yMax - panelMinInCanvas.y) + offScreenBuffer;
                 break;
-            case UIFlyDirection.Up:   // 从下方进入 (初始位置在Canvas底部之外)
-                // 面板的顶部边缘 与 Canvas的底部边缘 对齐, 再向下推一个 buffer
-                calculatedOffY = -canvasHalfHeight - (panelSize.y * (1 - panelPivot.y)) - offScreenBuffer; // <--- 修改点
+            case UIFlyDirection.Up:   // 从下方进入 (目标位置在屏幕底部之下)
+                // 需要向下移动的距离 = 面板底部到Canvas底部的距离 + 面板自身高度 + buffer
+                // = 面板顶部Y - Canvas底部Y
+                calculatedOffY = onScreenPosition.y - (panelMaxInCanvas.y - canvasRect.yMin) - offScreenBuffer;
                 break;
-            case UIFlyDirection.Left: // 从右方进入 (初始位置在Canvas右侧之外)
-                // 面板的左侧边缘 与 Canvas的右侧边缘 对齐, 再向右推一个 buffer
-                calculatedOffX = canvasHalfWidth + (panelSize.x * panelPivot.x) + offScreenBuffer; // <--- 修改点
+            case UIFlyDirection.Left: // 从右方进入 (目标位置在屏幕右侧之外)
+                calculatedOffX = onScreenPosition.x + (canvasRect.xMax - panelMinInCanvas.x) + offScreenBuffer;
                 break;
-            case UIFlyDirection.Right: // 从左方进入 (初始位置在Canvas左侧之外)
-                // 面板的右侧边缘 与 Canvas的左侧边缘 对齐, 再向左推一个 buffer
-                calculatedOffX = -canvasHalfWidth - (panelSize.x * (1 - panelPivot.x)) - offScreenBuffer; // <--- 修改点
+            case UIFlyDirection.Right: // 从左方进入 (目标位置在屏幕左侧之外)
+                calculatedOffX = onScreenPosition.x - (panelMaxInCanvas.x - canvasRect.xMin) - offScreenBuffer;
                 break;
         }
+        
         offScreenPosition = new Vector2(calculatedOffX, calculatedOffY);
         isInitialized = true;
     }
+
     /// <summary>
     /// 动画显示UI元素（飞入）
     /// </summary>
     public void Show()
     {
+        // 如果在运行时才激活，确保位置被正确初始化
         if (!isInitialized)
         {
-            InitializePositions(); // 确保已初始化
-            // 如果之前没有预设到屏幕外，且现在才初始化，需要手动设置一下初始位置
-             if (!initializeOffScreen) rectTransform.anchoredPosition = offScreenPosition;
+            InitializePositions();
+            if (initializeOffScreen) rectTransform.anchoredPosition = offScreenPosition;
         }
 
-
-        // 如果当前面板正在隐藏（或者已经隐藏但动画可能还在队列里），先杀死旧动画
         if (currentTweeter != null && currentTweeter.IsActive())
         {
-            // 如果目标是offScreenPosition，说明是正在隐藏或已隐藏，可以打断
-            if ((Vector2)currentTweeter.PathGetPoint(1f) == offScreenPosition)
-            {
-                 currentTweeter.Kill();
-            }
-            else if (rectTransform.anchoredPosition == onScreenPosition && isVisible) // 已经在屏幕上且可见
-            {
-                return; // 无需操作
-            }
+            if ((Vector2)currentTweeter.PathGetPoint(1f) == onScreenPosition) return; // 正在飞入或已在目标点
+            currentTweeter.Kill();
+        } else if (isVisible) {
+             return; // 已经静止在屏幕上
         }
+        
+        gameObject.SetActive(true);
 
-
-        gameObject.SetActive(true); // 确保GameObject是激活的才能播放动画
-
-        // Debug.Log($"Show: Animating from {rectTransform.anchoredPosition} to {onScreenPosition}");
         currentTweeter = rectTransform.DOAnchorPos(onScreenPosition, entryDuration)
             .SetEase(entryEase)
             .SetDelay(entryDelay)
             .OnComplete(() => {
                 isVisible = true;
                 currentTweeter = null;
-                // Debug.Log("Show Complete. Now at: " + rectTransform.anchoredPosition);
             });
     }
 
@@ -173,34 +165,25 @@ public class UIFlyInOut : MonoBehaviour
     {
         if (!isInitialized)
         {
-            InitializePositions(); // 确保已初始化
+            InitializePositions();
         }
 
-        // 如果当前面板正在显示（或者已经显示但动画可能还在队列里），先杀死旧动画
         if (currentTweeter != null && currentTweeter.IsActive())
         {
-             // 如果目标是onScreenPosition，说明是正在显示或已显示，可以打断
-            if((Vector2)currentTweeter.PathGetPoint(1f) == onScreenPosition)
-            {
-                currentTweeter.Kill();
-            }
-            else if (rectTransform.anchoredPosition == offScreenPosition && !isVisible) // 已经在屏幕外且不可见
-            {
-                 // gameObject.SetActive(false); // 可选：如果需要隐藏后禁用
-                return; // 无需操作
-            }
+            if ((Vector2)currentTweeter.PathGetPoint(1f) == offScreenPosition) return; // 正在飞出或已在目标点
+            currentTweeter.Kill();
+        } else if (!isVisible) {
+            return; // 已经静止在屏幕外
         }
-
-        // Debug.Log($"Hide: Animating from {rectTransform.anchoredPosition} to {offScreenPosition}");
+        
         currentTweeter = rectTransform.DOAnchorPos(offScreenPosition, exitDuration)
             .SetEase(exitEase)
             .SetDelay(exitDelay)
             .OnComplete(() => {
                 isVisible = false;
                 currentTweeter = null;
-                // Debug.Log("Hide Complete. Now at: " + rectTransform.anchoredPosition);
-                // 根据需求，可以选择在隐藏动画完成后禁用GameObject
-                // if (initializeOffScreen) // 或者根据其他逻辑
+                // 在隐藏后禁用GameObject是一个常见需求，可以取消下面的注释
+                // if (initializeOffScreen)
                 // {
                 //     gameObject.SetActive(false);
                 // }
@@ -212,50 +195,29 @@ public class UIFlyInOut : MonoBehaviour
     /// </summary>
     public void Toggle()
     {
-        // 一个更稳健的判断方法是检查目标位置或当前是否真的在屏幕上
-        // isVisible只在动画完成后更新，所以动画过程中它可能不准确
-        // 因此我们主要判断动画的目标或者最终的静止状态
         if (currentTweeter != null && currentTweeter.IsActive())
         {
             // 如果正在飞入，则反向飞出
-            if ((Vector2)currentTweeter.PathGetPoint(1f) == onScreenPosition)
-            {
-                Hide();
-            }
+            if ((Vector2)currentTweeter.PathGetPoint(1f) == onScreenPosition) Hide();
             // 如果正在飞出，则反向飞入
-            else if ((Vector2)currentTweeter.PathGetPoint(1f) == offScreenPosition)
-            {
-                Show();
-            }
+            else if ((Vector2)currentTweeter.PathGetPoint(1f) == offScreenPosition) Show();
         }
         else // 没有动画在进行
         {
-            if (isVisible) // 如果当前是可见的（在屏幕上）
-            {
-                Hide();
-            }
-            else // 如果当前是不可见的（在屏幕外或初始隐藏）
-            {
-                Show();
-            }
+            if (isVisible) Hide();
+            else Show();
         }
     }
-
-    /// <summary>
-    /// (编辑器用) 如果在运行时更改了参数，可以强制重新计算位置
-    /// </summary>
+    
     [ContextMenu("Force Reinitialize Positions")]
     public void ForceReinitialize()
     {
         isInitialized = false;
         InitializePositions();
-        if (initializeOffScreen && !isVisible) // 如果当前应该是隐藏的
+        if (initializeOffScreen)
         {
-             rectTransform.anchoredPosition = offScreenPosition;
-        } else if (isVisible) {
-            rectTransform.anchoredPosition = onScreenPosition;
+            rectTransform.anchoredPosition = isVisible ? onScreenPosition : offScreenPosition;
         }
-        Debug.Log("Positions reinitialized. Off-screen: " + offScreenPosition + ", On-screen: " + onScreenPosition);
+        Debug.Log($"Positions reinitialized. On-screen: {onScreenPosition}, Off-screen: {offScreenPosition}");
     }
-
 }
