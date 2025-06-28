@@ -40,8 +40,8 @@ public class GameFlowManager : MonoBehaviour
 
     private void Start()
     {
-        if (beginMusic != null)
-            AudioManager.Instance.Play(beginMusic);
+        // if (beginMusic != null)
+        //     AudioManager.Instance.Play(beginMusic);
     }
 
     // 测试：按空格键触发抖动
