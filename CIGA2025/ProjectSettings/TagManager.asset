@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Target
+  - Boss
   layers:
   - Default
   - TransparentFX
@@ -11,10 +13,10 @@ TagManager:
   - 
   - Water
   - UI
+  - BackGround
+  - GameObject
   - 
-  - 
-  - 
-  - 
+  - Obstacle
   - 
   - 
   - 
@@ -40,4 +42,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: BackGround
+    uniqueID: 1811600763
+    locked: 0
+  - name: GameObject
+    uniqueID: 3956028707
+    locked: 0
+  - name: UI
+    uniqueID: 714520505
     locked: 0
