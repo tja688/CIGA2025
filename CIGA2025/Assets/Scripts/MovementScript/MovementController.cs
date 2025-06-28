@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour
     {
         HandleMovement();
         UpdateAnimation();
-        Debug.Log("IsMoving 参数值：" + animator.GetBool("IsMoving"));
+        
     }
 
     void HandleMovement()
@@ -110,6 +110,9 @@ public class PlayerController : MonoBehaviour
     {
         // 简单示例：没有Tile的格子就是可通行
         return groundTilemap.GetTile(cellPosition) != null;
+       //碰撞器版本
+ 
+
     }
 
     void UpdateAnimation()
