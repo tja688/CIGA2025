@@ -15,10 +15,18 @@ public class GameFlowManager : MonoBehaviour
     public AudioConfigSO beginMusic;
     
     public bool IsGaming = false;
+    
+    public EffectController objectWithEffect; 
+
+    private string[] dialogueMessages = new string[]
+    {
+        "你好，冒险者！<shake>欢迎来到这个世界。</shake>",
+        "我这里有一些信息要告诉你。",
+        "请注意，<wiggle>危险</wiggle>就潜伏在前方...<wait d=1>一定要小心！"
+    };
 
     private void Awake()
     {
-        // 实现单例模式
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -32,13 +40,36 @@ public class GameFlowManager : MonoBehaviour
 
     private void Start()
     {
-        if (beginMusic != null)
-            AudioManager.Instance.Play(beginMusic);
+        // if (beginMusic != null)
+        //     AudioManager.Instance.Play(beginMusic);
     }
 
+    // 测试：按空格键触发抖动
     private void Update()
     {
-       
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Debug.Log("添加 0.5 的创伤值！");
+            CameraManager.Instance.AddTrauma(0.5f);
+        }
+        
+        // 按下 'F' 键，给对象施加 0.5 秒的负片效果
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (objectWithEffect != null)
+            {
+                objectWithEffect.TriggerInvertEffect(0.5f);
+            }
+        }
+        
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            if (DialogueManager.Instance)
+            {
+                DialogueManager.Instance.ShowDialogue(dialogueMessages);
+            }
+        }
+        
 
     }
 

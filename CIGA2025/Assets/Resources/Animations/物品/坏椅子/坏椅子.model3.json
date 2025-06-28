@@ -1,0 +1,23 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "坏椅子.moc3",
+		"Textures": [
+			"坏椅子.1024/texture_00.png",
+			"坏椅子.1024/texture_01.png"
+		],
+		"DisplayInfo": "坏椅子.cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": []
+		}
+	]
+}
