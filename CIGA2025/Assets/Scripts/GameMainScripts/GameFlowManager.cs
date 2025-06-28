@@ -15,6 +15,9 @@ public class GameFlowManager : MonoBehaviour
     public AudioConfigSO beginMusic;
     
     public bool IsGaming = false;
+    
+    public EffectController objectWithEffect; 
+
 
     private void Awake()
     {
@@ -36,10 +39,23 @@ public class GameFlowManager : MonoBehaviour
             AudioManager.Instance.Play(beginMusic);
     }
 
+    // 测试：按空格键触发抖动
     private void Update()
     {
-       
-
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Debug.Log("添加 0.5 的创伤值！");
+            CameraManager.Instance.AddTrauma(0.5f);
+        }
+        
+        // 按下 'F' 键，给对象施加 0.5 秒的负片效果
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (objectWithEffect != null)
+            {
+                objectWithEffect.TriggerInvertEffect(0.5f);
+            }
+        }
     }
 
     /// <summary>
