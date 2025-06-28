@@ -7,41 +7,33 @@ public class WanderController : MonoBehaviour
     // 定义游荡状态
     private enum WanderState
     {
-        Idle,                 // 静止或被拖拽
-        MovingToInitialPoint, // 正在移动到游荡区域的第一个随机点
-        Wandering             // 在区域内持续游荡
+        // 【修改】移除Idle状态，因为脚本要么在游荡，要么被禁用
+        MovingToInitialPoint,
+        Wandering
     }
-    
-    private DraggableObject _draggable; // 【新增】缓存 DraggableObject 引用
 
+    private DraggableObject _draggable;
+    private WanderState _currentState;
 
-    private WanderState _currentState = WanderState.Idle;
-    
     private Rigidbody2D _rb;
     private Bounds _wanderBounds;
-    private float _initialMoveSpeed; // 【新增】用于存储初始速度
-    private float _wanderSpeed;      // 【修改】专门用于存储游荡速度
+    private float _initialMoveSpeed;
+    private float _wanderSpeed;
     private Vector2 _targetPosition;
     private Collider2D _destructionZone;
-
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
-        
-        _draggable = GetComponent<DraggableObject>(); // 在 Awake 中获取
-
+        _draggable = GetComponent<DraggableObject>();
     }
 
     private void FixedUpdate()
     {
-        if (_currentState == WanderState.Idle)
-        {
-            _rb.velocity = Vector2.zero; // 确保静止时速度为0
-            return;
-        }
+        // 【核心修改】因为脚本一旦不处于游荡状态就会被禁用，
+        // 所以 FixedUpdate 不再需要检查 Idle 状态。
+        // 只要这个方法在运行，就说明一定在游荡。
 
-        // 【核心修改】根据当前状态选择合适的速度
         float currentSpeed = 0f;
         switch (_currentState)
         {
@@ -59,65 +51,58 @@ public class WanderController : MonoBehaviour
         {
             if (_currentState == WanderState.MovingToInitialPoint)
             {
-                _currentState = WanderState.Wandering; // 到达后，切换到游荡状态
+                _currentState = WanderState.Wandering;
                 Debug.Log($"{name} 到达指定区域，开始慢速游荡。");
             }
             _targetPosition = GetRandomPointInBounds();
         }
 
         Vector2 direction = (_targetPosition - (Vector2)transform.position).normalized;
-        _rb.velocity = direction * currentSpeed; // 使用当前状态对应的速度
+        _rb.velocity = direction * currentSpeed;
     }
 
-    /// <summary>
-    /// 【修改】更新 StartWandering 方法签名以接收两个速度
-    /// </summary>
     public void StartWandering(Bounds bounds, float initialSpeed, float wanderSpeed, Collider2D destructionZone)
     {
+        // 如果脚本被禁用了，可以通过重新激活来开始（如果需要这种逻辑）
+        this.enabled = true; 
+        
         Debug.Log($"{name} 开始冲向目标区域！");
         _wanderBounds = bounds;
-        _initialMoveSpeed = initialSpeed; // 存储初始速度
-        _wanderSpeed = wanderSpeed;       // 存储游荡速度
+        _initialMoveSpeed = initialSpeed;
+        _wanderSpeed = wanderSpeed;
         _destructionZone = destructionZone;
         _targetPosition = GetRandomPointInBounds();
         _currentState = WanderState.MovingToInitialPoint;
         
-        // 【修改】开始游荡时，将物体设为“可抓取”
         if (_draggable != null)
         {
             _draggable.IsDraggable = true;
         }
     }
     
-    /// <summary>
-    /// 停止游荡（例如被拖拽时调用）
-    /// </summary>
     public void StopWandering()
     {
-        if (_currentState == WanderState.Idle) return; // 如果已经是Idle，则无需操作
+        // 如果组件已经被禁用了，就没必要再执行了
+        if (!this.enabled) return;
         
-        Debug.Log($"{name} 停止游荡。");
-        _currentState = WanderState.Idle;
-        _rb.velocity = Vector2.zero; // 立即停止移动
+        
+        // 停止移动
+        _rb.velocity = Vector2.zero;
         _destructionZone = null;
+        
+        // 【核心修复】禁用此组件，这样它的 FixedUpdate 就不会再运行了
+        this.enabled = false;
     }
 
-    /// <summary>
-    /// 在边界内获取一个随机点
-    /// </summary>
     private Vector2 GetRandomPointInBounds()
     {
         float randomX = Random.Range(_wanderBounds.min.x, _wanderBounds.max.x);
         float randomY = Random.Range(_wanderBounds.min.y, _wanderBounds.max.y);
         return new Vector2(randomX, randomY);
     }
-
-    /// <summary>
-    /// 当离开某个触发器时被调用
-    /// </summary>
+    
     private void OnTriggerExit2D(Collider2D other)
     {
-        // 只有在游荡状态下，并且离开的是指定的销毁区域时，才销毁自己
         if (other == _destructionZone)
         {
             Debug.Log($"{name} 已超出边界，销毁！");

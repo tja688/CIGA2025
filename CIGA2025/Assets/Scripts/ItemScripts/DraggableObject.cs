@@ -33,14 +33,14 @@ public class DraggableObject : MonoBehaviour, IDraggable
     public void OnDragStart()
     {
         // 【新增】如果当前不可抓取，则直接返回
-        if (!IsDraggable) return;
-
-        if (_wanderController != null)
+        if (!IsDraggable)
         {
-            _wanderController.StopWandering();
+            Debug.Log("Can't drag object");
+            
+            return;
+
         }
-        
-        // 【新增】如果物体正在游荡，则停止它
+
         if (_wanderController != null)
         {
             _wanderController.StopWandering();

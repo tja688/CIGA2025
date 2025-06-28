@@ -121,7 +121,7 @@ public class SelectionManager : MonoBehaviour
         {
             ISelectable selectable = hit.GetComponent<ISelectable>();
 
-            if (selectable != null)
+            if (selectable != null && selectable.IsSelectionEnabled)
             {
                 float distance = Vector2.Distance(searchPosition, hit.transform.position);
                 if (distance < minDistance)
