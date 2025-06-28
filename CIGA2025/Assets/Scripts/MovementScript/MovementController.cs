@@ -1,99 +1,118 @@
 using UnityEngine;
-using UnityEngine.Tilemaps; 
+using UnityEngine.Tilemaps;
 
 public class PlayerController : MonoBehaviour
 {
-    public Tilemap groundTilemap; // 从 Inspector 拖入你的 Tilemap
-    public float moveSpeed = 5f; // 每秒移动的单位距离
+    public Tilemap groundTilemap; 
+    public float moveSpeed = 5f; 
 
-    private Vector3Int currentCellPos; // 角色当前所在的格子坐标
-    private Vector3 targetWorldPos;    // 角色要移动到的世界坐标目标点
-    private bool isMoving = false;     // 是否正在移动
+    private Vector3Int _currentCellPos;
+    private Vector3 _targetWorldPos;    
+    private bool _isMoving = false;    
 
-    // 动画相关
     public Animator animator;
     private static readonly int IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int MoveX = Animator.StringToHash("MoveX");
     private static readonly int MoveY = Animator.StringToHash("MoveY");
+    
+    private GameInput _playerInputActions;
+
+    private void OnEnable()
+    {
+        if (_playerInputActions == null)
+        {
+            if(PlayerInputController.Instance != null)
+            {
+                 _playerInputActions = PlayerInputController.Instance.InputActions;
+            }
+            else
+            {
+                return;
+            }
+        }
+        
+        _playerInputActions.PlayerControl.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _playerInputActions?.PlayerControl.Disable();
+    }
+
 
     void Start()
     {
-        // 初始化角色位置到它当前所在格子的中心
         if (groundTilemap == null)
         {
             Debug.LogError("Ground Tilemap is not assigned to PlayerController!");
-            enabled = false; // 禁用脚本
+            enabled = false; 
             return;
         }
 
-        currentCellPos = GetCellPosition(transform.position);
-        targetWorldPos = GetWorldCenterPosition(currentCellPos);
-        transform.position = targetWorldPos; // 确保角色初始位置对齐格子中心
+        _currentCellPos = GetCellPosition(transform.position);
+        _targetWorldPos = GetWorldCenterPosition(_currentCellPos);
+        transform.position = _targetWorldPos; 
+        
+        _playerInputActions = PlayerInputController.Instance.InputActions;
+        
+        if (!_playerInputActions.PlayerControl.enabled)
+        {
+            _playerInputActions.PlayerControl.Enable();
+        }
+
     }
 
-    void Update()
+    private void Update()
     {
         HandleMovement();
-        UpdateAnimation();
-        
     }
 
-    void HandleMovement()
+    private void HandleMovement()
     {
-        if (isMoving)
+        if (_isMoving)
         {
-            // 如果正在移动，向目标点靠近
-            transform.position = Vector3.MoveTowards(transform.position, targetWorldPos, moveSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, _targetWorldPos, moveSpeed * Time.deltaTime);
 
-            // 检查是否到达目标点
-            if (Vector3.Distance(transform.position, targetWorldPos) < 0.001f)
-            {
-                transform.position = targetWorldPos; // 精确对齐
-                isMoving = false;
-                animator.SetBool(IsMoving, false); // 停止移动动画
-            }
+            if (!(Vector3.Distance(transform.position, _targetWorldPos) < 0.001f)) return;
+            transform.position = _targetWorldPos;
+            _isMoving = false;
+            animator.SetBool(IsMoving, false);
         }
-        else // 不在移动时，接收输入
+        else 
         {
-            Vector3Int moveDirection = Vector3Int.zero;
-
-            if (Input.GetKeyDown(KeyCode.W)) // 上
+            var moveDirection = Vector3Int.zero;
+            
+            if (_playerInputActions.PlayerControl.Up.WasPressedThisFrame())
             {
                 moveDirection = Vector3Int.up;
-                Debug.Log("wwww");
             }
-            else if (Input.GetKeyDown(KeyCode.S)) // 下
+            else if (_playerInputActions.PlayerControl.Down.WasPressedThisFrame())
             {
                 moveDirection = Vector3Int.down;
             }
-            else if (Input.GetKeyDown(KeyCode.A)) // 左
+            else if (_playerInputActions.PlayerControl.Left.WasPressedThisFrame())
             {
                 moveDirection = Vector3Int.left;
             }
-            else if (Input.GetKeyDown(KeyCode.D)) // 右
+            else if (_playerInputActions.PlayerControl.Right.WasPressedThisFrame())
             {
                 moveDirection = Vector3Int.right;
             }
 
-            if (moveDirection != Vector3Int.zero)
-            {
-                Vector3Int nextCellPos = currentCellPos + moveDirection;
+            if (moveDirection == Vector3Int.zero) return;
+            var nextCellPos = _currentCellPos + moveDirection;
 
-                // 检查下一个格子是否在Tilemap范围内并且可通行
-                if (IsCellWalkable(nextCellPos))
-                {
-                    currentCellPos = nextCellPos;
-                    targetWorldPos = GetWorldCenterPosition(currentCellPos);
-                    isMoving = true;
-                    animator.SetBool(IsMoving, true); // 开始移动动画
-                    animator.SetFloat(MoveX, moveDirection.x);
-                    animator.SetFloat(MoveY, moveDirection.y);
-                }
-            }
+            if (!IsCellWalkable(nextCellPos)) return;
+            _currentCellPos = nextCellPos;
+            _targetWorldPos = GetWorldCenterPosition(_currentCellPos);
+            _isMoving = true;
+                    
+            animator.SetBool(IsMoving, true); 
+            animator.SetFloat(MoveX, moveDirection.x);
+            animator.SetFloat(MoveY, moveDirection.y);
         }
     }
 
-    // 辅助方法 (可以从上面的 GridManager 中复制过来，或者让这个脚本引用 GridManager 的单例)
     private Vector3Int GetCellPosition(Vector3 worldPosition)
     {
         return groundTilemap.WorldToCell(worldPosition);
@@ -101,22 +120,13 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 GetWorldCenterPosition(Vector3Int cellPosition)
     {
-        Vector3 worldPos = groundTilemap.CellToWorld(cellPosition);
-        Vector3 cellSize = groundTilemap.cellSize;
+        var worldPos = groundTilemap.CellToWorld(cellPosition);
+        var cellSize = groundTilemap.cellSize;
         return worldPos + new Vector3(cellSize.x / 2, cellSize.y / 2, 0);
     }
 
     private bool IsCellWalkable(Vector3Int cellPosition)
     {
-        // 简单示例：没有Tile的格子就是可通行
-        return groundTilemap.GetTile(cellPosition) != null;
-       //碰撞器版本
- 
-
-    }
-
-    void UpdateAnimation()
-    {
-        // 动画参数在 HandleMovement 中设置
+        return groundTilemap.GetTile(cellPosition);
     }
 }
