@@ -5,7 +5,6 @@ using System;
 
 /// <summary>
 /// 管理玩家的血量，并处理受伤、无敌帧和死亡逻辑。
-/// [新增功能] 使用OnGUI()绘制一个简易的血条UI。
 /// </summary>
 public class PlayerHealth : MonoBehaviour
 {
@@ -67,10 +66,6 @@ public class PlayerHealth : MonoBehaviour
 
     #region [新增] GUI 血量显示
 
-    /// <summary>
-    /// OnGUI是Unity的一个特殊方法，每帧都会被调用以绘制GUI元素。
-    /// 我们用它来画血条。
-    /// </summary>
     private void OnGUI()
     {
         // === UI布局参数定义 ===
@@ -82,7 +77,6 @@ public class PlayerHealth : MonoBehaviour
         int leftOffset = 15;
         int topOffset = 15;
         
-        // 我们用一个循环来绘制所有的血格（包括空的）
         for (int i = 0; i < maxHealth; i++)
         {
             // 计算当前要绘制的这个血格在屏幕上的位置和大小
@@ -119,7 +113,6 @@ public class PlayerHealth : MonoBehaviour
         
         // 保存当前的GUI皮肤设置
         GUIStyle background = GUI.skin.box;
-        // 将我们的纯色纹理应用为盒子的背景
         GUI.skin.box.normal.background = texture;
         // 绘制一个没有文字的盒子，它会填充整个Rect区域
         GUI.Box(position, GUIContent.none);
