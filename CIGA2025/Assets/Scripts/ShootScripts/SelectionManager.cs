@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // 【新增】引用新的输入系统
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// 负责处理游戏中“可选择对象”的框选逻辑和激活逻辑。
@@ -20,10 +20,9 @@ public class SelectionManager : MonoBehaviour
     [SerializeField] private float selectionRadius = 1f;
     #endregion
 
-
     private SelectionBoxController _selectionBoxInstance;
     private ISelectable _currentSelectedObject;
-    private GameInput _playerInputActions; // 【新增】用于获取输入动作
+    private GameInput _playerInputActions;
 
     #region Unity 生命周期
     private void Awake()
@@ -36,7 +35,6 @@ public class SelectionManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // 【新增】获取输入系统的引用
         _playerInputActions = PlayerInputController.Instance.InputActions;
 
         if (selectionBoxPrefab != null)
@@ -51,13 +49,11 @@ public class SelectionManager : MonoBehaviour
         }
     }
     
-    // 【新增】启用输入
     private void OnEnable()
     {
         _playerInputActions.PlayerControl.Enable();
     }
 
-    // 【新增】禁用输入
     private void OnDisable()
     {
         _playerInputActions.PlayerControl.Disable();
@@ -65,7 +61,6 @@ public class SelectionManager : MonoBehaviour
 
     private void Update()
     {
-        // 如果不是拍照模式，则直接取消选择并隐藏框选框
         if (!PhotoModeManager.Instance || !PhotoModeManager.Instance.IsPhotoMode)
         {
             if (_currentSelectedObject != null)
@@ -89,12 +84,16 @@ public class SelectionManager : MonoBehaviour
             _selectionBoxInstance.UpdateBounds(_currentSelectedObject.SelectionBounds);
             _selectionBoxInstance.SetVisible(true);
             
-            // 【新增】第3步：检测点击并激活对象
-            // 如果有物体被选中，并且这一帧鼠标左键按下了
             if (_playerInputActions.PlayerControl.Click.WasPressedThisFrame())
             {
                 // 调用该物体的激活方法
                 _currentSelectedObject.OnActivate();
+                
+                // 立即退出拍照模式并设置锁定，防止立即重入
+                if (PhotoModeManager.Instance != null)
+                {
+                    PhotoModeManager.Instance.DeactivateAndLock();
+                }
             }
         }
         else
@@ -104,7 +103,6 @@ public class SelectionManager : MonoBehaviour
     }
     #endregion
 
-    
     #region 私有辅助方法
     /// <summary>
     /// 在指定位置附近查找最近的、实现了 ISelectable 接口的对象。

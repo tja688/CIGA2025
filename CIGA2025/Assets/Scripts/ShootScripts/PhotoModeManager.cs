@@ -6,9 +6,10 @@ public class PhotoModeManager : MonoBehaviour
 {
     public static PhotoModeManager Instance { get; private set; }
 
-    public bool IsPhotoMode { get; private set; } // 将 set 设为 private，只能通过方法切换
+    public bool IsPhotoMode { get; private set; }
 
-    // 【核心改动】所有与光标相关的 [SerializeField] 和 OnGUI 方法都已被移除
+    // 【新增】用于防止激活对象后，在未松开空格键的情况下立即重新进入拍照模式
+    private bool _isLockedAfterActivation = false;
 
     private void Awake()
     {
@@ -25,7 +26,10 @@ public class PhotoModeManager : MonoBehaviour
     {
         if (PlayerInputController.Instance != null)
         {
-            PlayerInputController.Instance.InputActions.PlayerControl.Shoot.performed += TogglePhotoModeViaInput;
+            // 【核心改动】订阅 started 和 canceled 事件，以实现“按住”和“松开”的逻辑
+            // 假设 "Shoot" 动作绑定到了空格键
+            PlayerInputController.Instance.InputActions.PlayerControl.Shoot.started += HandleShootStarted;
+            PlayerInputController.Instance.InputActions.PlayerControl.Shoot.canceled += HandleShootCanceled;
         }
     }
 
@@ -33,26 +37,71 @@ public class PhotoModeManager : MonoBehaviour
     {
         if (PlayerInputController.Instance != null)
         {
-            PlayerInputController.Instance.InputActions.PlayerControl.Shoot.performed -= TogglePhotoModeViaInput;
+            // 【核心改动】取消订阅
+            PlayerInputController.Instance.InputActions.PlayerControl.Shoot.started -= HandleShootStarted;
+            PlayerInputController.Instance.InputActions.PlayerControl.Shoot.canceled -= HandleShootCanceled;
+        }
+    }
+    
+    /// <summary>
+    /// 【新增】处理按键按下（例如空格键）的逻辑
+    /// </summary>
+    private void HandleShootStarted(InputAction.CallbackContext context)
+    {
+        // 如果模式没有被锁定，则进入拍照模式
+        if (!_isLockedAfterActivation)
+        {
+            EnterPhotoMode();
         }
     }
 
-    private void TogglePhotoModeViaInput(InputAction.CallbackContext context)
+    /// <summary>
+    /// 【新增】处理按键松开（例如空格键）的逻辑
+    /// </summary>
+    private void HandleShootCanceled(InputAction.CallbackContext context)
     {
-        TogglePhotoMode();
+        // 任何时候松开按键，都应该退出拍照模式，并解除锁定状态
+        _isLockedAfterActivation = false;
+        ExitPhotoMode();
     }
 
     /// <summary>
-    /// 切换拍照模式的核心逻辑
+    /// 【新增】进入拍照模式的具体实现
     /// </summary>
-    public void TogglePhotoMode()
+    private void EnterPhotoMode()
     {
-        IsPhotoMode = !IsPhotoMode;
+        if (IsPhotoMode) return; // 防止重复进入
 
-        // 【核心改动】不再自己操作 Cursor.visible，而是向 CursorManager 发送通知
+        IsPhotoMode = true;
+        
         if (CursorManager.Instance != null)
         {
             CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
+    }
+    
+    /// <summary>
+    /// 【新增】退出拍照模式的具体实现
+    /// </summary>
+    private void ExitPhotoMode()
+    {
+        if (!IsPhotoMode) return; // 防止重复退出
+
+        IsPhotoMode = false;
+
+        if (CursorManager.Instance != null)
+        {
+            CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
+        }
+    }
+
+    /// <summary>
+    /// 【新增】由外部（如 SelectionManager）调用，用于在激活对象后退出并锁定模式，
+    /// 直到玩家松开空格键。
+    /// </summary>
+    public void DeactivateAndLock()
+    {
+        _isLockedAfterActivation = true;
+        ExitPhotoMode();
     }
 }
