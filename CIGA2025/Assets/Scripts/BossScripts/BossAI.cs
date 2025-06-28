@@ -237,8 +237,6 @@ public class BossAI : MonoBehaviour
         
         this.gameObject.SetActive(false);
         
-        Application.Quit();
-
     }
 
     private void OnDestroy()

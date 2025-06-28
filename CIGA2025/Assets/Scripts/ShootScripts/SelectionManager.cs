@@ -89,6 +89,9 @@ public class SelectionManager : MonoBehaviour
                 // 调用该物体的激活方法
                 _currentSelectedObject.OnActivate();
                 
+                // 拍照使用一个电池
+                BatteryManager.Instance.UseBattery(1);
+                
                 // 立即退出拍照模式并设置锁定，防止立即重入
                 if (PhotoModeManager.Instance != null)
                 {

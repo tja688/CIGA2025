@@ -1,36 +1,57 @@
 using UnityEngine;
+using TMPro; // 使用 TextMeshPro 需要引用此命名空间
 
+/// <summary>
+/// 挂载在主Canvas上，用于管理游戏暂停逻辑和UI交互。
+/// </summary>
 public class SimplePauseMenu : MonoBehaviour
 {
-    [Header("要控制的UI面板")]
-    [Tooltip("将你的暂停菜单面板（Panel）拖到这里")]
-    [SerializeField] private GameObject pauseMenuPanel;
+    [Header("UI 组件引用")]
+    [Tooltip("关联“继续游戏”或类似功能的按钮文本，将在游戏进行时显示特定内容。")]
+    public TextMeshProUGUI continueButtonText;
+    
+    private bool isGamePausedByThisScript = false;
 
-    private bool isPaused = false;
+    private bool _isGameStoped = false;
 
-    void Start()
+    void FixedUpdate()
     {
-        pauseMenuPanel.SetActive(false);
-        Time.timeScale = 1f;
+        UpdateContinueButtonText();
+    }
+
+    /// <summary>
+    /// 根据UI管理器的状态来处理游戏的暂停和恢复。
+    /// </summary>
+    public void StopGame()
+    {
+        _isGameStoped = true;
+        
+        Time.timeScale = 0;
     }
     
-    /// <summary>
-    /// 暂停游戏。可以被一个“设置”或“暂停”按钮调用。
-    /// </summary>
-    public void PauseGame()
+    public void ContinueGame()
     {
-        isPaused = true;
-        Time.timeScale = 0f; // 暂停游戏时间
-        pauseMenuPanel.SetActive(true); // 显示暂停菜单
+        _isGameStoped = false;
+        
+        Time.timeScale = 1;
     }
 
     /// <summary>
-    /// 继续游戏。需要绑定到暂停菜单中的“继续”按钮上。
+    /// 根据GameFlowManager的状态更新UI文本。
     /// </summary>
-    public void ResumeGame()
+    private void UpdateContinueButtonText()
     {
-        isPaused = false;
-        Time.timeScale = 1f; // 恢复游戏时间
-        pauseMenuPanel.SetActive(false); // 隐藏暂停菜单
+        // 确保文本对象已在Inspector中关联
+        if (continueButtonText == null) return;
+        
+        // 确保GameFlowManager的单例已准备好
+        if (GameFlowManager.Instance == null) return;
+
+        // 3. 当IsGaming为true时变更其文字内容为（继续游戏）
+        if (GameFlowManager.Instance.IsGaming)
+        {
+            continueButtonText.text = "继续游戏";
+        }
+
     }
 }

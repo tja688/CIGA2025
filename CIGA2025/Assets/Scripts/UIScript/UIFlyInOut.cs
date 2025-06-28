@@ -152,6 +152,9 @@ public class UIFlyInOut : MonoBehaviour
         currentTweeter = rectTransform.DOAnchorPos(onScreenPosition, entryDuration)
             .SetEase(entryEase)
             .SetDelay(entryDelay)
+            // ▼▼▼ 【核心修改】 ▼▼▼
+            .SetUpdate(true) // 告诉DOTween使用Unscaled Time，忽略Time.timeScale
+            // ▲▲▲ 【核心修改】 ▲▲▲
             .OnComplete(() => {
                 isVisible = true;
                 currentTweeter = null;
@@ -179,14 +182,13 @@ public class UIFlyInOut : MonoBehaviour
         currentTweeter = rectTransform.DOAnchorPos(offScreenPosition, exitDuration)
             .SetEase(exitEase)
             .SetDelay(exitDelay)
+            // ▼▼▼ 【核心修改】 ▼▼▼
+            .SetUpdate(true) // 告诉DOTween使用Unscaled Time，忽略Time.timeScale
+            // ▲▲▲ 【核心修改】 ▲▲▲
             .OnComplete(() => {
                 isVisible = false;
                 currentTweeter = null;
-                // 在隐藏后禁用GameObject是一个常见需求，可以取消下面的注释
-                // if (initializeOffScreen)
-                // {
-                //     gameObject.SetActive(false);
-                // }
+                // if (initializeOffScreen) { gameObject.SetActive(false); }
             });
     }
 

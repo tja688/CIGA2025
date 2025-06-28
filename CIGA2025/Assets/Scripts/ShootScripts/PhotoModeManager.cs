@@ -1,11 +1,16 @@
 // PhotoModeManager.cs
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PhotoModeManager : MonoBehaviour
 {
     public static PhotoModeManager Instance { get; private set; }
 
+    [Header("UI交互设置")]
+    [Tooltip("需要临时禁用交互的UI画布上的GraphicRaycaster组件")]
+    [SerializeField] private GraphicRaycaster uiRaycaster;
+    
     public bool IsPhotoMode { get; private set; }
 
     // 【新增】用于防止激活对象后，在未松开空格键的情况下立即重新进入拍照模式
@@ -26,8 +31,6 @@ public class PhotoModeManager : MonoBehaviour
     {
         if (PlayerInputController.Instance != null)
         {
-            // 【核心改动】订阅 started 和 canceled 事件，以实现“按住”和“松开”的逻辑
-            // 假设 "Shoot" 动作绑定到了空格键
             PlayerInputController.Instance.InputActions.PlayerControl.Shoot.started += HandleShootStarted;
             PlayerInputController.Instance.InputActions.PlayerControl.Shoot.canceled += HandleShootCanceled;
         }
@@ -78,6 +81,10 @@ public class PhotoModeManager : MonoBehaviour
         {
             CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
+        
+        // 【核心改动】禁用UI射线检测，让按钮无法被点击
+        if (uiRaycaster == null) return;
+        uiRaycaster.enabled = false;
     }
     
     /// <summary>
@@ -89,10 +96,14 @@ public class PhotoModeManager : MonoBehaviour
 
         IsPhotoMode = false;
 
-        if (CursorManager.Instance != null)
+        if (CursorManager.Instance)
         {
             CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
+        
+        // 【核心改动】恢复UI射线检测，让按钮恢复正常
+        if (!uiRaycaster) return;
+        uiRaycaster.enabled = true;
     }
 
     /// <summary>

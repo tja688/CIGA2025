@@ -1,7 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq; // 用于 RemoveAll (如果需要)
+using System.Linq;
 
+/// <summary>
+/// 管理UI面板组的动画，并维护当前是否有任何面板处于可见状态。
+/// </summary>
 public class UIAnimationManager : MonoBehaviour
 {
     // --- 单例模式实现 ---
@@ -22,6 +25,18 @@ public class UIAnimationManager : MonoBehaviour
     [Header("UI面板分组 (编辑器配置)")]
     [Tooltip("在此处配置UI面板组及其包含的面板。组名应唯一。")]
     public List<UIPanelGroup> inspectorDefinedGroups = new List<UIPanelGroup>();
+
+    // ▼▼▼ 【核心修改】新增状态追踪部分 ▼▼▼
+    [Header("运行时状态")]
+    [Tooltip("当前所有被指令显示（正在飞入或已在屏幕上）的UI面板。")]
+    private readonly HashSet<UIFlyInOut> visiblePanels = new HashSet<UIFlyInOut>();
+
+    /// <summary>
+    /// 公开属性，用于判断当前是否有任何UI面板处于可见状态。
+    /// true 表示至少有一个面板被指令显示。
+    /// </summary>
+    public bool IsAnyPanelVisible => visiblePanels.Count > 0;
+    // ▲▲▲ 【核心修改】新增状态追踪部分 ▲▲▲
 
     // 运行时用于高效管理组的字典
     private readonly Dictionary<string, List<UIFlyInOut>> managedGroups = new Dictionary<string, List<UIFlyInOut>>();
@@ -59,26 +74,21 @@ public class UIAnimationManager : MonoBehaviour
                 continue;
             }
 
-            // 确保组名在字典中存在（即使它最初为空列表）
             if (!managedGroups.ContainsKey(groupSetup.groupName))
             {
                 managedGroups[groupSetup.groupName] = new List<UIFlyInOut>();
             }
             else
             {
-                // 如果在Inspector中定义了同名组，这里的逻辑是后续的同名组会尝试合并面板
-                // 但通常建议在Inspector中保持组名唯一
                 Debug.LogWarning($"UIAnimationManager: 编辑器配置中发现重复的组名 '{groupSetup.groupName}'。面板将被添加到已存在的同名组中。");
             }
 
-            // 将 Inspector 中配置的面板添加到对应的运行时组列表中
             if (groupSetup.panelsInGroup == null) continue;
             for (var index = 0; index < groupSetup.panelsInGroup.Count; index++)
             {
                 var panel = groupSetup.panelsInGroup[index];
                 if (panel)
                 {
-                    // 使用内部方法添加，避免在同一个组内重复添加
                     AddPanelToRuntimeGroupList(panel, groupSetup.groupName, false);
                 }
             }
@@ -121,7 +131,6 @@ public class UIAnimationManager : MonoBehaviour
         if (!managedGroups.ContainsKey(groupName))
         {
             managedGroups[groupName] = new List<UIFlyInOut>();
-            // Debug.Log($"UIAnimationManager: 组 '{groupName}' 已成功创建。");
         }
         else
         {
@@ -155,27 +164,18 @@ public class UIAnimationManager : MonoBehaviour
     {
         if (!panel || string.IsNullOrEmpty(groupName))
         {
-            if(!panel) Debug.LogWarning("UIAnimationManager: 尝试注销一个空的UI面板引用。");
-            if(string.IsNullOrEmpty(groupName)) Debug.LogWarning("UIAnimationManager: 尝试从一个未命名的组注销面板。");
+            if (!panel) Debug.LogWarning("UIAnimationManager: 尝试注销一个空的UI面板引用。");
+            if (string.IsNullOrEmpty(groupName)) Debug.LogWarning("UIAnimationManager: 尝试从一个未命名的组注销面板。");
             return;
         }
 
         if (managedGroups.TryGetValue(groupName, out var groupList))
         {
-            if (groupList.Remove(panel))
-            {
-                // Debug.Log($"UIAnimationManager: 面板 '{panel.name}' 已成功从组 '{groupName}' 注销。");
-                // 可选: 如果组列表为空，是否移除该组?
-                // if (groupList.Count == 0) { managedGroups.Remove(groupName); }
-            }
-            else
-            {
-                Debug.LogWarning($"UIAnimationManager: 面板 '{panel.name}' 在组 '{groupName}' 中未找到，无法注销。");
-            }
+            groupList.Remove(panel);
         }
         else
         {
-             Debug.LogWarning($"UIAnimationManager: 尝试从不存在的组 '{groupName}' 注销面板 '{panel.name}'。");
+            Debug.LogWarning($"UIAnimationManager: 尝试从不存在的组 '{groupName}' 注销面板 '{panel.name}'。");
         }
     }
 
@@ -190,16 +190,11 @@ public class UIAnimationManager : MonoBehaviour
             return;
         }
 
-        // string panelNameForLog = panel.name; // 避免panel在过程中被销毁导致name访问问题
-        // bool removed = false;
-        foreach (var groupPair in managedGroups.Where(groupPair => groupPair.Value.Remove(panel)))
+        foreach (var groupPair in managedGroups)
         {
-            // removed = true;
-            // Debug.Log($"UIAnimationManager: 面板 '{panelNameForLog}' 已从组 '{groupPair.Key}' 注销。");
+            groupPair.Value.Remove(panel);
         }
-        // if(!removed) Debug.LogWarning($"UIAnimationManager: 面板 '{panelNameForLog}' 未在任何管理的组中找到。");
     }
-
 
     // --- 公开的组动画控制 API ---
 
@@ -216,14 +211,17 @@ public class UIAnimationManager : MonoBehaviour
 
         if (managedGroups.TryGetValue(groupName, out List<UIFlyInOut> groupList))
         {
-            // Debug.Log($"UIAnimationManager: 准备显示组 '{groupName}' 中的 {groupList.Count} 个面板。");
-            // 从后往前遍历，以便在找到null时安全地从列表中移除
             for (var i = groupList.Count - 1; i >= 0; i--)
             {
                 var panel = groupList[i];
                 if (panel)
                 {
                     panel.Show();
+                    // 追踪状态：将此面板添加到可见集合中
+                    if (!visiblePanels.Contains(panel))
+                    {
+                        visiblePanels.Add(panel);
+                    }
                 }
                 else
                 {
@@ -251,13 +249,14 @@ public class UIAnimationManager : MonoBehaviour
 
         if (managedGroups.TryGetValue(groupName, out List<UIFlyInOut> groupList))
         {
-            // Debug.Log($"UIAnimationManager: 准备隐藏组 '{groupName}' 中的 {groupList.Count} 个面板。");
             for (var i = groupList.Count - 1; i >= 0; i--)
             {
                 var panel = groupList[i];
                 if (panel)
                 {
                     panel.Hide();
+                    // 追踪状态：从此面板从可见集合中移除
+                    visiblePanels.Remove(panel);
                 }
                 else
                 {
@@ -273,24 +272,25 @@ public class UIAnimationManager : MonoBehaviour
     }
 
     /// <summary>
-    /// (可选) 清理指定组或所有组中的空引用项（如果面板GameObject被意外销毁）。
+    /// 清理指定组或所有组中的空引用项（如果面板GameObject被意外销毁）。
     /// </summary>
     public void CleanUpNullReferencesInGroups(string specificGroupName = null)
     {
+        // 顺便清理追踪集合中的空引用，确保状态的绝对可靠
+        visiblePanels.RemoveWhere(item => item == null);
+
         if (string.IsNullOrEmpty(specificGroupName)) // 清理所有组
         {
             foreach (var groupPair in managedGroups)
             {
                 groupPair.Value.RemoveAll(item => item == null);
             }
-            // Debug.Log("UIAnimationManager: 已清理所有组中的空引用。");
         }
         else // 清理指定组
         {
             if (managedGroups.TryGetValue(specificGroupName, out List<UIFlyInOut> groupList))
             {
                 groupList.RemoveAll(item => item == null);
-                // Debug.Log($"UIAnimationManager: 已清理组 '{specificGroupName}' 中的空引用。");
             }
             else
             {

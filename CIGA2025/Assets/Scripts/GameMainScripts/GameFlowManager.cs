@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -12,6 +13,8 @@ public class GameFlowManager : MonoBehaviour
     public static GameFlowManager Instance { get; private set; }
     
     public AudioConfigSO beginMusic;
+    
+    public bool IsGaming = false;
 
     private void Awake()
     {
@@ -31,6 +34,12 @@ public class GameFlowManager : MonoBehaviour
     {
         if (beginMusic != null)
             AudioManager.Instance.Play(beginMusic);
+    }
+
+    private void Update()
+    {
+       
+
     }
 
     /// <summary>

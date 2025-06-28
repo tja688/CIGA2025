@@ -4,7 +4,7 @@ using UnityEngine;
 public abstract class ItemBase : MonoBehaviour, ISelectable
 {
     private BoxCollider2D _boxCollider;
-    private bool isOnActive = false; 
+    protected bool isOnActive = false; 
 
     public Bounds SelectionBounds
     {

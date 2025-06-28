@@ -1,4 +1,6 @@
 // DragController.cs
+
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem; // 仍然需要引用
 
@@ -28,11 +30,36 @@ public class DragController : MonoBehaviour
         playerInputActions.PlayerControl.Disable();
     }
 
-    private void Update()
+private void Update()
     {
+        // 【核心改动】在每次更新的开始，首先检查正在拖拽的对象是否已被销毁。
+        // 这是为了处理物体在拖拽过程中因碰撞等原因被销毁的边界情况。
+        if (draggedObject != null && (draggedObject as MonoBehaviour) == null)
+        {
+            Debug.Log("被拖拽的物体已在外部被销毁，自动清理拖拽状态。");
+
+            // 如果箭头还存在，销毁它
+            if (currentArrow != null)
+            {
+                Destroy(currentArrow.gameObject);
+                currentArrow = null;
+            }
+
+            // 清理对已销毁对象的引用，并将光标设为默认
+            draggedObject = null;
+            CursorManager.Instance.SetDefault();
+
+            // 清理完毕，立即结束本帧的Update，防止后续代码因对象不存在而报错
+            return;
+        }
+
+        // --- 以下是你的原始逻辑，保持不变 ---
+
         if (PhotoModeManager.Instance != null && PhotoModeManager.Instance.IsPhotoMode)
         {
             CancelDragIfNeeded();
+            // 在拍照模式下，不执行任何拖拽逻辑
+            return;
         }
 
         Vector3 mouseWorldPos = GetMouseWorldPosition();
@@ -43,16 +70,19 @@ public class DragController : MonoBehaviour
             if (draggedObject == null)
             {
                 RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero);
-                IDraggable draggable = hit.collider?.GetComponent<IDraggable>();
-
-                if (draggable != null && draggable.IsDraggable)
+                if (hit.collider != null)
                 {
-                    draggedObject = draggable;
-                    draggedObject.OnDragStart();
-                    
-                    GameObject arrowInstance = Instantiate(arrowPrefab);
-                    currentArrow = arrowInstance.GetComponent<ArrowView>();
-                    currentArrow.UpdateArrow(draggedObject.transform.position, mouseWorldPos);
+                    IDraggable draggable = hit.collider.GetComponent<IDraggable>();
+
+                    if (draggable != null && draggable.IsDraggable)
+                    {
+                        draggedObject = draggable;
+                        draggedObject.OnDragStart();
+                        
+                        GameObject arrowInstance = Instantiate(arrowPrefab);
+                        currentArrow = arrowInstance.GetComponent<ArrowView>();
+                        currentArrow.UpdateArrow(draggedObject.transform.position, mouseWorldPos);
+                    }
                 }
             }
         }
@@ -79,11 +109,18 @@ public class DragController : MonoBehaviour
         else
         {
             RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero);
-            // 【优化】悬停检查也应考虑 IsDraggable
-            IDraggable draggable = hit.collider?.GetComponent<IDraggable>();
-            if (draggable != null && draggable.IsDraggable)
+            // 悬停检查也应考虑 IsDraggable
+            if (hit.collider != null)
             {
-                CursorManager.Instance.SetGrab();
+                IDraggable draggable = hit.collider.GetComponent<IDraggable>();
+                if (draggable != null && draggable.IsDraggable)
+                {
+                    CursorManager.Instance.SetGrab();
+                }
+                else
+                {
+                    CursorManager.Instance.SetDefault();
+                }
             }
             else
             {
@@ -91,7 +128,6 @@ public class DragController : MonoBehaviour
             }
         }
     }
-    
     // 如果拍照模式开启，强制取消拖拽
     private void CancelDragIfNeeded()
     {
@@ -105,9 +141,37 @@ public class DragController : MonoBehaviour
         }
     }
 
+    // 【新增】事件处理方法
+    private void HandleDraggedObjectDestroyed()
+    {
+        
+        if(draggedObject != null)
+        {
+            draggedObject.OnWillBeDestroyed -= HandleDraggedObjectDestroyed;
+        }
+
+        if (currentArrow != null)
+        {
+            Destroy(currentArrow.gameObject);
+            currentArrow = null;
+        }
+
+        draggedObject = null;
+        CursorManager.Instance.SetDefault();
+    }
+    
     private Vector3 GetMouseWorldPosition()
     {
         Vector2 mouseScreenPos = playerInputActions.PlayerControl.Point.ReadValue<Vector2>();
         return mainCamera.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, mainCamera.nearClipPlane));
+    }
+
+    private void OnDestroy()
+    {
+        playerInputActions.PlayerControl.Disable();
+        if (draggedObject != null)
+        {
+            draggedObject.OnWillBeDestroyed -= HandleDraggedObjectDestroyed;
+        }
     }
 }
