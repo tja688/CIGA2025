@@ -48,7 +48,7 @@ public class DragController : MonoBehaviour
             {
                 RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero);
                 IDraggable draggable = hit.collider?.GetComponent<IDraggable>();
-                if (draggable != null)
+                if (draggable != null && draggable.IsDraggable)
                 {
                     draggedObject = draggable;
                     draggedObject.OnDragStart();

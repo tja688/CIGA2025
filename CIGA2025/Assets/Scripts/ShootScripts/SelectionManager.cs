@@ -1,7 +1,8 @@
 using UnityEngine;
+using UnityEngine.InputSystem; // 【新增】引用新的输入系统
 
 /// <summary>
-/// 负责处理游戏中“可选择对象”的框选逻辑。
+/// 负责处理游戏中“可选择对象”的框选逻辑和激活逻辑。
 /// 它会根据鼠标位置，在指定的层上查找实现了 ISelectable 接口的对象。
 /// 此管理器的核心逻辑仅在 PhotoModeManager 的拍照模式下激活。
 /// </summary>
@@ -22,7 +23,7 @@ public class SelectionManager : MonoBehaviour
 
     private SelectionBoxController _selectionBoxInstance;
     private ISelectable _currentSelectedObject;
-
+    private GameInput _playerInputActions; // 【新增】用于获取输入动作
 
     #region Unity 生命周期
     private void Awake()
@@ -35,6 +36,9 @@ public class SelectionManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        // 【新增】获取输入系统的引用
+        _playerInputActions = PlayerInputController.Instance.InputActions;
+
         if (selectionBoxPrefab != null)
         {
             _selectionBoxInstance = Instantiate(selectionBoxPrefab);
@@ -45,6 +49,18 @@ public class SelectionManager : MonoBehaviour
         {
             Debug.LogError("SelectionManager: 未配置 selectionBoxPrefab！框选功能将无法工作。");
         }
+    }
+    
+    // 【新增】启用输入
+    private void OnEnable()
+    {
+        _playerInputActions.PlayerControl.Enable();
+    }
+
+    // 【新增】禁用输入
+    private void OnDisable()
+    {
+        _playerInputActions.PlayerControl.Disable();
     }
 
     private void Update()
@@ -60,37 +76,32 @@ public class SelectionManager : MonoBehaviour
             return;
         }
 
-        // --- 核心逻辑重构 ---
+        // --- 核心逻辑 ---
 
-        // 第1步：每帧都检测鼠标下方是否有可选择的对象
-        Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        ISelectable objectUnderMouse = FindClosestSelectable(mouseWorldPos);
+        // 第1步：检测鼠标下方是否有可选择的对象
+        Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        _currentSelectedObject = FindClosestSelectable(mouseWorldPos);
 
-        // 第2步：将检测到的对象直接赋值为当前选择的对象
-        // 注意：这里的 _currentSelectedObject 现在代表“鼠标正悬停的对象”
-        _currentSelectedObject = objectUnderMouse;
-
-        // 第3步：根据当前是否选中对象，来决定框选框的状态
-        // 这段逻辑现在每帧都会执行
+        // 第2步：根据当前是否选中对象，更新框选框状态
         if (_currentSelectedObject != null)
         {
-            // 如果有对象被选中：
-            // a. 持续更新框选框的位置，使其平滑跟随对象
             _selectionBoxInstance.transform.position = _currentSelectedObject.SelectionBounds.center;
-        
-            // b. 持续更新框选框的大小（以防对象大小也发生变化）
             _selectionBoxInstance.UpdateBounds(_currentSelectedObject.SelectionBounds);
-
-            // c. 确保框选框是可见的
             _selectionBoxInstance.SetVisible(true);
+            
+            // 【新增】第3步：检测点击并激活对象
+            // 如果有物体被选中，并且这一帧鼠标左键按下了
+            if (_playerInputActions.PlayerControl.Click.WasPressedThisFrame())
+            {
+                // 调用该物体的激活方法
+                _currentSelectedObject.OnActivate();
+            }
         }
         else
         {
-            // 如果没有对象被选中，则确保框选框是不可见的
             _selectionBoxInstance.SetVisible(false);
         }
     }
-
     #endregion
 
     
@@ -122,7 +133,5 @@ public class SelectionManager : MonoBehaviour
         }
         return closest;
     }
-    
-
     #endregion
 }

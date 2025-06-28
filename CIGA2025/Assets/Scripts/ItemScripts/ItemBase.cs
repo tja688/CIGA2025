@@ -1,11 +1,14 @@
 // ItemBase.cs
 
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class ItemBase : MonoBehaviour, ISelectable
 {
     // 用于缓存自身的碰撞体组件，避免每次都调用 GetComponent，性能更好
     private BoxCollider2D _boxCollider;
+    
+    private bool isOnActive = false; 
 
     // 【修改】将 SelectionBounds 改为计算属性
     public Bounds SelectionBounds
@@ -29,9 +32,21 @@ public abstract class ItemBase : MonoBehaviour, ISelectable
         _boxCollider = GetComponent<BoxCollider2D>();
     }
 
-    // 【删除】不再需要在 Start() 中进行一次性的赋值
-    // private void Start()
-    // {
-    //     SelectionBounds =  GetComponent<BoxCollider2D>().bounds;
-    // }
+    /// <summary>
+    /// 【新增】实现 ISelectable 的 OnActivate 方法。
+    /// 定义为抽象方法，强制子类提供具体的激活逻辑。
+    /// </summary>
+    public virtual void OnActivate()
+    {
+        if (ActivationManager.Instance)
+        {
+            ActivationManager.Instance.Activate(this);
+        }
+        else
+        {
+            Debug.LogError("无法激活：场景中未找到 ActivationManager！");
+        }
+        
+        isOnActive =  true;
+    }
 }

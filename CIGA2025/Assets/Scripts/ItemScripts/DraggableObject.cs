@@ -5,14 +5,20 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))] 
 public class DraggableObject : MonoBehaviour, IDraggable
 {
-    [SerializeField] private float dragForceMultiplier = 10f; // 拖拽力的乘数，可调整
-    [SerializeField] private Color dragStartColor = Color.yellow; // 被拖拽时的颜色
+    [SerializeField] private float dragForceMultiplier = 1f;
+    [SerializeField] private Color dragStartColor = Color.yellow;
 
     private Rigidbody2D rb;
     private Color originalColor;
     private SpriteRenderer spriteRenderer;
+    private WanderController _wanderController; // 【新增】缓存 WanderController 的引用
+    
+    /// <summary>
+    /// 【新增】控制此物体当前是否可被抓取。
+    /// </summary>
+    public bool IsDraggable { get; set; } = false; // 默认不可抓取
 
-    private void Awake()
+    private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -20,10 +26,26 @@ public class DraggableObject : MonoBehaviour, IDraggable
         {
             originalColor = spriteRenderer.color;
         }
+
+        _wanderController = GetComponent<WanderController>();
     }
 
     public void OnDragStart()
     {
+        // 【新增】如果当前不可抓取，则直接返回
+        if (!IsDraggable) return;
+
+        if (_wanderController != null)
+        {
+            _wanderController.StopWandering();
+        }
+        
+        // 【新增】如果物体正在游荡，则停止它
+        if (_wanderController != null)
+        {
+            _wanderController.StopWandering();
+        }
+
         if(spriteRenderer != null)
         {
             spriteRenderer.color = dragStartColor;
@@ -33,22 +55,25 @@ public class DraggableObject : MonoBehaviour, IDraggable
 
     public void OnDrag(Vector3 mouseWorldPosition)
     {
-        // 计算从物体中心指向鼠标的向量
+        // 【新增】如果当前不可抓取，则直接返回
+        if (!IsDraggable) return;
+        
         Vector2 direction = (Vector2)mouseWorldPosition - rb.position;
-        // 距离越远，力越大
         float distance = direction.magnitude;
-        Vector2 force = direction.normalized * distance * dragForceMultiplier;
-
-        // 施加一个力，让物体向鼠标位置移动
+        Vector2 force = direction.normalized * (distance * dragForceMultiplier);
         rb.AddForce(force);
     }
 
     public void OnDragEnd()
     {
+        // 【新增】如果当前不可抓取，则直接返回
+        if (!IsDraggable) return;
+        
         if(spriteRenderer != null)
         {
             spriteRenderer.color = originalColor;
         }
+        // 当拖拽结束后，我们不自动恢复游荡。激活需要通过点击重新触发。
         Debug.Log($"{name} 拖拽结束!");
     }
 }

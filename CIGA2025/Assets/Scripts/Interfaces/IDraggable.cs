@@ -9,4 +9,6 @@ public interface IDraggable
     void OnDrag(Vector3 mouseWorldPosition);
 
     void OnDragEnd();
+    
+    public bool IsDraggable { get; set; } 
 }

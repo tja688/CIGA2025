@@ -149,7 +149,11 @@ public class ItemDropController : MonoBehaviour
         {
             item.transform.rotation = Quaternion.identity;
             var rb = item.GetComponent<Rigidbody2D>();
-            if (rb != null) rb.bodyType = RigidbodyType2D.Static;
+            if (rb != null)
+            {
+                rb.velocity = Vector2.zero;
+                // rb.angularVelocity = 0f;
+            }
         });
     }
     
