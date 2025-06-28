@@ -139,6 +139,7 @@ GameObject:
   - component: {fileID: 3414971}
   - component: {fileID: 3414970}
   - component: {fileID: 3414969}
+  - component: {fileID: 3414973}
   m_Layer: 0
   m_Name: "\u6D4B\u8BD5BOSS"
   m_TagString: Boss
@@ -342,6 +343,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _maxHealth: 1000
   damageNumberPrefab: {fileID: 1259023133563206875, guid: 254d46b80825c744fa43b103e1011afc, type: 3}
+--- !u!95 &3414973
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3414963}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2de9670602345714b8fcbd30cc1764c1, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6356375
 GameObject:
   m_ObjectHideFlags: 0
