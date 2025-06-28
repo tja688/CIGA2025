@@ -17,16 +17,16 @@ public class AudioManager : MonoBehaviour
     [Tooltip("在此处指定场景中的主 Audio Mixer")]
     public AudioMixer masterMixer; 
 
-    private const string BACKGROUND_MIXER_PARAM = "BackGround";
-    private const string SFX_MIXER_PARAM = "SFX";
-    private const string UI_MIXER_PARAM = "UI";
+    private const string BACKGROUND_MIXER_PARAM = "BGMVolume";
+    private const string SFX_MIXER_PARAM = "SFXVolume";
+    private const string UI_MIXER_PARAM = "UIVolume";
 
-    private const string PREFS_BG_VOL = "AudioManager_BackgroundVolume";
-    private const string PREFS_BG_MUTE = "AudioManager_BackgroundMute";
-    private const string PREFS_SFX_VOL = "AudioManager_SFXVolume";
-    private const string PREFS_SFX_MUTE = "AudioManager_SFXMute";
-    private const string PREFS_UI_VOL = "AudioManager_UIVolume";
-    private const string PREFS_UI_MUTE = "AudioManager_UIMute";
+    private const string PREFS_BG_VOL = "BGMVolume";
+    private const string PREFS_BG_MUTE = "BGMMute";
+    private const string PREFS_SFX_VOL = "SFXVolume";
+    private const string PREFS_SFX_MUTE = "SFXMute";
+    private const string PREFS_UI_VOL = "UIVolume";
+    private const string PREFS_UI_MUTE = "UIMute";
 
     private bool _isBackgroundMuted = false;
     private float _lastBackgroundVolumeLinear = 0.75f;
