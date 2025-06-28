@@ -18,10 +18,15 @@ public class GameFlowManager : MonoBehaviour
     
     public EffectController objectWithEffect; 
 
+    private string[] dialogueMessages = new string[]
+    {
+        "你好，冒险者！<shake>欢迎来到这个世界。</shake>",
+        "我这里有一些信息要告诉你。",
+        "请注意，<wiggle>危险</wiggle>就潜伏在前方...<wait d=1>一定要小心！"
+    };
 
     private void Awake()
     {
-        // 实现单例模式
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -56,6 +61,16 @@ public class GameFlowManager : MonoBehaviour
                 objectWithEffect.TriggerInvertEffect(0.5f);
             }
         }
+        
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            if (DialogueManager.Instance)
+            {
+                DialogueManager.Instance.ShowDialogue(dialogueMessages);
+            }
+        }
+        
+
     }
 
     /// <summary>
