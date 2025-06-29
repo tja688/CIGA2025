@@ -12,12 +12,16 @@ public class PhotoModeManager : MonoBehaviour
     [Tooltip("需要临时禁用交互的UI画布上的GraphicRaycaster组件")]
     [SerializeField] private GraphicRaycaster uiRaycaster;
     
-    // 【新增】对拍照动画对象的引用
     [Header("视觉效果")]
-    [Tooltip("拍照时触发的动画对象")]
-    [SerializeField] private GameObject livePhotoEffect;
+    // 【修改】这里引用的应该是项目文件夹里的预制体，而不是场景里的对象
+    [Tooltip("拍照时要生成的动画效果预制体")]
+    [SerializeField] private GameObject livePhotoEffectPrefab;
     
-    private Animator _livePhotoAnimator; // 【新增】缓存动画控制器
+    public Transform livePhotoEffectParent;
+    
+    // 【新增】用于持有当前生成的实例
+    private GameObject _currentEffectInstance;
+    private Animator _livePhotoAnimator; // 依然用来触发动画
 
     
     public bool IsPhotoMode { get; private set; }
@@ -34,13 +38,6 @@ public class PhotoModeManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        
-        // 【新增】获取动画控制器并初始隐藏动画对象
-        if (livePhotoEffect != null)
-        {
-            _livePhotoAnimator = livePhotoEffect.GetComponent<Animator>();
-            livePhotoEffect.SetActive(false);
-        }
     }
 
     private void OnEnable()
@@ -98,10 +95,14 @@ public class PhotoModeManager : MonoBehaviour
             CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
         
-        // 【修改】进入拍照模式时，显示动画对象
-        if (livePhotoEffect != null)
+        // 【核心修改】进入拍照模式时，生成(Instantiate)预制体
+        if (livePhotoEffectPrefab != null)
         {
-            livePhotoEffect.SetActive(true);
+            // 生成实例
+            _currentEffectInstance = Instantiate(livePhotoEffectPrefab, livePhotoEffectParent); 
+            
+            // 从新生成的实例上获取Animator
+            _livePhotoAnimator = _currentEffectInstance.GetComponent<Animator>();
         }
         
         // 【核心改动】禁用UI射线检测，让按钮无法被点击
@@ -123,10 +124,11 @@ public class PhotoModeManager : MonoBehaviour
             CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
         
-        // 【核心改动】只有在需要立即隐藏时，才执行SetActive(false)
-        if (hideEffectImmediately && livePhotoEffect != null && livePhotoEffect.activeSelf)
+        // 【核心修改】如果是取消拍照，则立即销毁(Destroy)实例
+        if (hideEffectImmediately && _currentEffectInstance != null)
         {
-            livePhotoEffect.SetActive(false);
+            Destroy(_currentEffectInstance);
+            _currentEffectInstance = null; // 销毁后清空引用，好习惯
         }
 
         if (!uiRaycaster) return;
@@ -149,6 +151,7 @@ public class PhotoModeManager : MonoBehaviour
     /// </summary>
     public void TriggerLiveAnimation()
     {
+        // 【修改】确保在实例上的Animator上触发
         if (_livePhotoAnimator != null)
         {
             _livePhotoAnimator.SetTrigger(Live);

@@ -12,6 +12,8 @@ public class StartGameButton : MonoBehaviour
     private Button _button;
     private bool _hasBeenClicked = false;
 
+    public bool jumpBegan;
+    
     void Awake()
     {
         _button = GetComponent<Button>();
@@ -35,7 +37,12 @@ public class StartGameButton : MonoBehaviour
         {
             Debug.Log("[StartGameButton] 开始游戏按钮被点击，请求进入开场演出状态。");
             // 【核心】通知游戏流程管理器，进入开场演出状态
-            GameFlowManager.Instance.UpdateGameState(GameFlowManager.GameState.OpeningCutscene);
+            if(!jumpBegan)
+                GameFlowManager.Instance.UpdateGameState(GameFlowManager.GameState.OpeningCutscene);
+            else
+            {
+                GameFlowManager.Instance.UpdateGameState(GameFlowManager.GameState.Gameplay);
+            }
         }
         else
         {

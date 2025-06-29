@@ -5,11 +5,15 @@ using UnityEngine;
 /// </summary>
 public class AnimationEventHelper : MonoBehaviour
 {
+
     /// <summary>
     /// 这个方法将被动画事件调用，用于隐藏自身所在的GameObject。
     /// </summary>
     public void HideGameObject()
     {
-        gameObject.SetActive(false);
+        Destroy(gameObject);
+
     }
+    
+    
 }
