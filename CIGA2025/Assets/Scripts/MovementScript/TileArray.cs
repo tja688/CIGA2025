@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
-
+//通过映射,将原本tile坐标标准化
+//左下角为(0,0)
+//
+//
 public class TileArray : MonoBehaviour
 {
     public Transform forMin;      // 左下角参考点
     public Transform forMax;      // 右上角参考点
-    public Tilemap tilemap;       // 主图层
+    public Tilemap tilemap;       // 生成对象的图层
     public Tilemap obstacle;      // 障碍层（可选）
 
     private Vector3Int cellMin;
@@ -14,38 +17,7 @@ public class TileArray : MonoBehaviour
     private int lengthX;
     private int lengthY;
 
-    void Start()
-    {
-        Vector3 worldMin = forMin.position;
-        Vector3 worldMax = forMax.position;
-
-        cellMin = tilemap.WorldToCell(worldMin);
-        cellMax = tilemap.WorldToCell(worldMax);
-
-        Vector3Int bottomLeft = Vector3Int.Min(cellMin, cellMax);
-        Vector3Int topRight = Vector3Int.Max(cellMin, cellMax);
-        cellMin = bottomLeft;
-        cellMax = topRight;
-
-        lengthX = cellMax.x - cellMin.x + 1;
-        lengthY = cellMax.y - cellMin.y + 1;
-
-        Debug.Log($"格子范围：左下 {cellMin}，右上 {cellMax}");
-        Debug.Log($"地图大小：{lengthX} x {lengthY}");
-    }
-
-    // 将逻辑坐标映射到实际 Cell 坐标
-    private Vector3Int MapToCell(int x, int y)
-    {
-        return new Vector3Int(cellMin.x + x, cellMin.y + y, 0);
-    }
-
-    public bool IsInBounds(int x, int y)
-    {
-        return x >= 0 && x < lengthX && y >= 0 && y < lengthY;
-    }
-
-    public bool Useable(int x, int y)
+        public bool Useable(int x, int y)
     {
         if (!IsInBounds(x, y)) return false;
         Vector3Int cell = MapToCell(x, y);
@@ -106,6 +78,39 @@ public class TileArray : MonoBehaviour
         for (int y = 0; y < lengthY; y++)
             ClearTile(x, y);
     }
+
+
+    void Start()
+    {
+        Vector3 worldMin = forMin.position;
+        Vector3 worldMax = forMax.position;
+
+        cellMin = tilemap.WorldToCell(worldMin);
+        cellMax = tilemap.WorldToCell(worldMax);
+
+        Vector3Int bottomLeft = Vector3Int.Min(cellMin, cellMax);
+        Vector3Int topRight = Vector3Int.Max(cellMin, cellMax);
+        cellMin = bottomLeft;
+        cellMax = topRight;
+
+        lengthX = cellMax.x - cellMin.x + 1;
+        lengthY = cellMax.y - cellMin.y + 1;
+
+        Debug.Log($"格子范围：左下 {cellMin}，右上 {cellMax}");
+        Debug.Log($"地图大小：{lengthX} x {lengthY}");
+    }
+
+    // 将逻辑坐标映射到实际 Cell 坐标
+    private Vector3Int MapToCell(int x, int y)
+    {
+        return new Vector3Int(cellMin.x + x, cellMin.y + y, 0);
+    }
+
+    public bool IsInBounds(int x, int y)
+    {
+        return x >= 0 && x < lengthX && y >= 0 && y < lengthY;
+    }
+
 
     // 获取逻辑尺寸
     public int Width => lengthX;
