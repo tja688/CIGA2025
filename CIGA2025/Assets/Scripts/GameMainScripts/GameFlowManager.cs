@@ -26,6 +26,11 @@ public class GameFlowManager : MonoBehaviour
     [Header("背景音乐设置 (BGM)")]
     [Tooltip("主菜单界面循环播放的音乐")]
     public AudioConfigSO mainMenuMusic;
+    
+    [Header("背景音乐设置 (BGM)")]
+    [Tooltip("主菜单界面循环播放的音乐")]
+    public AudioConfigSO beginMenuMusic;
+    
     [Tooltip("主要游戏环节（Boss战）循环播放的音乐")]
     public AudioConfigSO gameplayMusic;
     [Tooltip("游戏结束界面循环播放的音乐")]
@@ -89,6 +94,9 @@ public class GameFlowManager : MonoBehaviour
             case GameState.MainMenu:
                 musicToPlay = mainMenuMusic;
                 break;
+            case GameState.OpeningCutscene:
+                musicToPlay = beginMenuMusic;
+                break;
             case GameState.Gameplay:
                 musicToPlay = gameplayMusic;
                 break;
@@ -121,10 +129,10 @@ public class GameFlowManager : MonoBehaviour
     
     private void Update()
     {
-        if (CurrentState == GameState.MainMenu && Input.GetKeyDown(KeyCode.Space))
-        {
-            UpdateGameState(GameState.Gameplay);
-        }
+        // if (CurrentState == GameState.MainMenu && Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     UpdateGameState(GameState.Gameplay);
+        // }
     }
     
     public void StartGame()
