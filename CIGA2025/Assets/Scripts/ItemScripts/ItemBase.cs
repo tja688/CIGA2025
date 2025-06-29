@@ -15,8 +15,8 @@ public abstract class ItemBase : MonoBehaviour, ISelectable
     [SerializeField] protected float itemMass = 1.0f;
 
     // --- 内部状态变量 ---
-    protected bool isOnActive = false; 
-    private int _currentHitCount = 0; // 用于追踪当前碰撞次数
+    protected bool isOnActive = false;
+    protected int _currentHitCount = 0; // 用于追踪当前碰撞次数
 
     // --- 组件引用 ---
     private BoxCollider2D _boxCollider;
