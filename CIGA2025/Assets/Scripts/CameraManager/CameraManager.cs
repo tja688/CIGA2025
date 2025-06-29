@@ -143,6 +143,28 @@ public class CameraManager : MonoBehaviour
         _focusCts?.Cancel();
         _focusCts?.Dispose();
     }
+    
+    /// <summary>
+    /// 异步地将摄像机平滑地重置回其初始位置和大小。
+    /// </summary>
+    public async UniTask ResetCameraAsync(float moveDuration = -1, float zoomDuration = -1)
+    {
+        _focusCts?.Cancel();
+        _focusCts = new CancellationTokenSource();
+        var token = _focusCts.Token;
+
+        _currentTarget = null;
+    
+        float finalMoveDuration = moveDuration >= 0 ? moveDuration : _defaultMoveDuration;
+        float finalZoomDuration = zoomDuration >= 0 ? zoomDuration : _defaultZoomDuration;
+    
+        // 同时进行移动和缩放
+        await UniTask.WhenAll(
+            PanAsync(_initialPosition, finalMoveDuration, token),
+            ZoomAsync(_initialOrthographicSize, finalZoomDuration, token)
+        );
+    }
+
 
     #region Public API - Shake
 
@@ -236,7 +258,7 @@ public class CameraManager : MonoBehaviour
     #region Private Helpers
 
     // 平滑平移摄像机
-    private async UniTask PanAsync(Vector3 targetPosition, float duration, CancellationToken token)
+    public async UniTask PanAsync(Vector3 targetPosition, float duration, CancellationToken token)
     {
         float elapsedTime = 0f;
         Vector3 startPosition = _basePosition;
@@ -260,7 +282,7 @@ public class CameraManager : MonoBehaviour
     }
 
     // 平滑缩放摄像机
-    private async UniTask ZoomAsync(float targetSize, float duration, CancellationToken token)
+    public async UniTask ZoomAsync(float targetSize, float duration, CancellationToken token)
     {
         float elapsedTime = 0f;
         float startSize = _baseOrthographicSize;

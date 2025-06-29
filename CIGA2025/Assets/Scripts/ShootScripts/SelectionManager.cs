@@ -89,6 +89,12 @@ public class SelectionManager : MonoBehaviour
                 // 调用该物体的激活方法
                 _currentSelectedObject.OnActivate();
                 
+                // 【核心改动】通知 PhotoModeManager 播放 "Live" 动画
+                if (PhotoModeManager.Instance != null)
+                {
+                    PhotoModeManager.Instance.TriggerLiveAnimation();
+                }
+                
                 // 拍照使用一个电池
                 BatteryManager.Instance.UseBattery(1);
                 

@@ -23,6 +23,21 @@ public class BossAI : MonoBehaviour
     private CancellationTokenSource _cancellationTokenSource;
     private bool _isStunned = false;
 
+    // 【新增】一个标志位，防止重复启动主循环
+    private bool _isLoopRunning = false;
+    
+    
+    // 【修改】使用 OnEnable/OnDisable 来管理事件订阅
+    void OnEnable()
+    {
+        GameFlowManager.OnGameStateChanged += HandleGameStateChanged;
+    }
+
+    void OnDisable()
+    {
+        GameFlowManager.OnGameStateChanged -= HandleGameStateChanged;
+    }
+    
     void Start()
     {
         // 获取所有必要的组件
@@ -35,9 +50,26 @@ public class BossAI : MonoBehaviour
 
         // 初始化取消令牌
         _cancellationTokenSource = new CancellationTokenSource();
-
-        // 启动Boss的AI主循环
-        MainLoop().Forget();
+        
+    }
+    
+    // 【新增】处理游戏状态变化
+    private void HandleGameStateChanged(GameFlowManager.GameState newState)
+    {
+        if (newState == GameFlowManager.GameState.Gameplay && !_isLoopRunning)
+        {
+            // 如果是游戏状态且循环未运行，则启动Boss AI
+            Debug.Log("[BossAI] 游戏开始，启动Boss主循环！");
+            _isLoopRunning = true;
+            MainLoop().Forget();
+        }
+        else if (newState != GameFlowManager.GameState.Gameplay && _isLoopRunning)
+        {
+            // 如果不是游戏状态（例如返回主菜单），则停止Boss的一切活动
+            Debug.Log("[BossAI] 游戏暂停或结束，停止Boss活动。");
+            _cancellationTokenSource.Cancel();
+            _isLoopRunning = false;
+        }
     }
 
     private async UniTask MainLoop()
@@ -45,7 +77,7 @@ public class BossAI : MonoBehaviour
         // 开场，进入第一阶段
         await TransitionToPhase(BossPhase.Phase1);
 
-        while (_currentPhase != BossPhase.Defeated)
+        while (_currentPhase != BossPhase.Defeated && _isLoopRunning)
         {
             if (_isStunned)
             {

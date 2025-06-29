@@ -59,9 +59,7 @@ public class BossHealth : MonoBehaviour
 
         _currentHealth -= damageAmount;
         _currentHealth = Mathf.Max(_currentHealth, 0);
-
-        Debug.Log($"Boss 受到伤害: {damageAmount}, 当前血量: {_currentHealth}");
-
+        
         // [新增] 在Boss位置生成伤害数字
         SpawnDamageNumber(damageToShow);
 
@@ -83,9 +81,7 @@ public class BossHealth : MonoBehaviour
     {
         float damagePerTick = totalDamage / (duration * 10); // 每0.1秒造成一次伤害
         float elapsedTime = 0f;
-
-        Debug.Log($"Boss 开始受到灼烧效果，总伤害: {totalDamage}, 持续时间: {duration}秒");
-
+        
         while (elapsedTime < duration)
         {
             if (_currentHealth <= 0) break;
@@ -95,7 +91,6 @@ public class BossHealth : MonoBehaviour
             await UniTask.Delay(TimeSpan.FromSeconds(0.1), ignoreTimeScale: false);
             elapsedTime += 0.1f;
         }
-        Debug.Log("Boss 灼烧效果结束");
     }
 
     /// <summary>
