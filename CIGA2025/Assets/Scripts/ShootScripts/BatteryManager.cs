@@ -121,7 +121,7 @@ public class BatteryManager : MonoBehaviour
     /// <param name="amount">增加的数量</param>
     public void AddBattery(int amount)
     {
-        CurrentBatteryCount += amount;
+        // CurrentBatteryCount += amount;
     }
 
     /// <summary>
@@ -130,6 +130,6 @@ public class BatteryManager : MonoBehaviour
     /// <param name="amount">减少的数量</param>
     public void UseBattery(int amount)
     {
-        CurrentBatteryCount -= amount;
+        // CurrentBatteryCount -= amount;
     }
 }

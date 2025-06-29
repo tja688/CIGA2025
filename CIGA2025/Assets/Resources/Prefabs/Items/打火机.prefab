@@ -3583,10 +3583,10 @@ GameObject:
   - component: {fileID: 2413626964438572966}
   - component: {fileID: 554961448284063665}
   - component: {fileID: 7191558567317711066}
-  - component: {fileID: 124004637834620294}
   - component: {fileID: 3135432934075470710}
   - component: {fileID: 7579619302535063845}
   - component: {fileID: 7900518140226487042}
+  - component: {fileID: 1871524964649813530}
   m_Layer: 0
   m_Name: "\u6253\u706B\u673A"
   m_TagString: Live2d
@@ -3847,21 +3847,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.071818024, y: 0.09742981}
   m_EdgeRadius: 0
---- !u!114 &124004637834620294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6211369643802046781}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d9bc97e6fd28c3488cfce558b7cec02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemDamage: 50
-  maxHitCount: 1
-  itemMass: 1
 --- !u!114 &3135432934075470710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3903,6 +3888,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dragForceMultiplier: 1
   dragStartColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+--- !u!114 &1871524964649813530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6211369643802046781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4a8663b0895014478ba8cfdb241bd5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemDamage: 30
+  maxHitCount: 1
+  itemMass: 1
 --- !u!1 &6570350382078642248
 GameObject:
   m_ObjectHideFlags: 0

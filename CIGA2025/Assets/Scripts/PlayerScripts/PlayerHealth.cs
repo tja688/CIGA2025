@@ -8,7 +8,7 @@ using System;
 /// </summary>
 public class PlayerHealth : MonoBehaviour
 {
-    [Header("血量设置")] [SerializeField] private int maxHealth = 5;
+    [Header("血量设置")] [SerializeField] private int maxHealth = 3;
     private int currentHealth;
 
     [Header("受伤后设置")] [SerializeField] private float invincibilityDuration = 1.5f;

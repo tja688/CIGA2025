@@ -1476,8 +1476,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d9bc97e6fd28c3488cfce558b7cec02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemDamage: 50
-  maxHitCount: 1
+  itemDamage: 20
+  maxHitCount: 4
   itemMass: 1
 --- !u!114 &1328500986302320587
 MonoBehaviour:

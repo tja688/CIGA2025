@@ -149,9 +149,9 @@ GameObject:
   - component: {fileID: 9089103449442507311}
   - component: {fileID: 4992650807056642675}
   - component: {fileID: 1998998810253914793}
-  - component: {fileID: 3022146228999766172}
   - component: {fileID: 4895232283980001469}
   - component: {fileID: 3203913365346838153}
+  - component: {fileID: 226950630479716048}
   m_Layer: 0
   m_Name: "\u6905\u5B50"
   m_TagString: Live2d
@@ -427,21 +427,6 @@ MonoBehaviour:
   sortingLayerName: GameObject
   positionToOrderFactor: 100
   sortingOrderOffset: 0
---- !u!114 &3022146228999766172
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 285687441123684676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d9bc97e6fd28c3488cfce558b7cec02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemDamage: 50
-  maxHitCount: 1
-  itemMass: 1
 --- !u!114 &4895232283980001469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -468,6 +453,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dragForceMultiplier: 1
   dragStartColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+--- !u!114 &226950630479716048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 285687441123684676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf7c0e6a47c895a4b8736599e29e12e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemDamage: 50
+  maxHitCount: 3
+  itemMass: 5
 --- !u!1 &511081983477252413
 GameObject:
   m_ObjectHideFlags: 0
