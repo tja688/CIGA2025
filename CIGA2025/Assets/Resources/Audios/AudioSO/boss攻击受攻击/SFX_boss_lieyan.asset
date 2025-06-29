@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8e9d431b7ea6a4ebb1625508f792df, type: 3}
+  m_Name: SFX_boss_lieyan
+  m_EditorClassIdentifier: 
+  mixerGroup: {fileID: 5450134333356430884, guid: 52b4ca43d9577af478d4c9703949dd66, type: 2}
+  audioClip: {fileID: 8300000, guid: 141a9f660a5768643a3597d8bc33646a, type: 3}
+  isRandomVolume: 0
+  volume: 0.5
+  minVolume: 0.3
+  maxVolume: 0.7
+  useRandomPool: 0
+  applyRandomVolumeModifier: 0
+  volumeModifierMin: 0.8
+  volumeModifierMax: 1.2
+  audioPool: []
