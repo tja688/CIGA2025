@@ -5,11 +5,20 @@ using UnityEngine.UI;
 
 public class PhotoModeManager : MonoBehaviour
 {
+    private static readonly int Live = Animator.StringToHash("Live");
     public static PhotoModeManager Instance { get; private set; }
 
     [Header("UI交互设置")]
     [Tooltip("需要临时禁用交互的UI画布上的GraphicRaycaster组件")]
     [SerializeField] private GraphicRaycaster uiRaycaster;
+    
+    // 【新增】对拍照动画对象的引用
+    [Header("视觉效果")]
+    [Tooltip("拍照时触发的动画对象")]
+    [SerializeField] private GameObject livePhotoEffect;
+    
+    private Animator _livePhotoAnimator; // 【新增】缓存动画控制器
+
     
     public bool IsPhotoMode { get; private set; }
 
@@ -25,6 +34,13 @@ public class PhotoModeManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        
+        // 【新增】获取动画控制器并初始隐藏动画对象
+        if (livePhotoEffect != null)
+        {
+            _livePhotoAnimator = livePhotoEffect.GetComponent<Animator>();
+            livePhotoEffect.SetActive(false);
+        }
     }
 
     private void OnEnable()
@@ -82,17 +98,23 @@ public class PhotoModeManager : MonoBehaviour
             CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
         
+        // 【修改】进入拍照模式时，显示动画对象
+        if (livePhotoEffect != null)
+        {
+            livePhotoEffect.SetActive(true);
+        }
+        
         // 【核心改动】禁用UI射线检测，让按钮无法被点击
         if (uiRaycaster == null) return;
         uiRaycaster.enabled = false;
     }
     
     /// <summary>
-    /// 【新增】退出拍照模式的具体实现
+    /// 给方法增加一个默认参数，用于控制是否立即隐藏动画效果
     /// </summary>
-    private void ExitPhotoMode()
+    private void ExitPhotoMode(bool hideEffectImmediately = true) // <--- 在这里增加参数
     {
-        if (!IsPhotoMode) return; // 防止重复退出
+        if (!IsPhotoMode) return;
 
         IsPhotoMode = false;
 
@@ -101,18 +123,35 @@ public class PhotoModeManager : MonoBehaviour
             CursorManager.Instance.NotifyPhotoModeStatus(IsPhotoMode);
         }
         
-        // 【核心改动】恢复UI射线检测，让按钮恢复正常
+        // 【核心改动】只有在需要立即隐藏时，才执行SetActive(false)
+        if (hideEffectImmediately && livePhotoEffect != null && livePhotoEffect.activeSelf)
+        {
+            livePhotoEffect.SetActive(false);
+        }
+
         if (!uiRaycaster) return;
         uiRaycaster.enabled = true;
     }
 
+ 
     /// <summary>
-    /// 【新增】由外部（如 SelectionManager）调用，用于在激活对象后退出并锁定模式，
+    /// 由外部（如 SelectionManager）调用，用于在激活对象后退出并锁定模式，
     /// 直到玩家松开空格键。
     /// </summary>
     public void DeactivateAndLock()
     {
         _isLockedAfterActivation = true;
-        ExitPhotoMode();
+        ExitPhotoMode(false);
+    }
+
+    /// <summary>
+    /// 【新增】一个公共方法，供外部调用来触发 "Live" 动画
+    /// </summary>
+    public void TriggerLiveAnimation()
+    {
+        if (_livePhotoAnimator != null)
+        {
+            _livePhotoAnimator.SetTrigger(Live);
+        }
     }
 }
