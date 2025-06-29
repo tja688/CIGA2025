@@ -53,6 +53,51 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Up"",
+                    ""type"": ""Button"",
+                    ""id"": ""e4166691-65a4-4030-8207-d88d030d7214"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Down"",
+                    ""type"": ""Button"",
+                    ""id"": ""d9d68f38-9ef9-480f-b6cf-c23dce8ac218"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Left"",
+                    ""type"": ""Button"",
+                    ""id"": ""d3c3e798-2e34-44fa-b04b-a7b1e04f1be1"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Right"",
+                    ""type"": ""Button"",
+                    ""id"": ""c2972f27-aafd-4fb7-8926-6706695cecc1"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Back"",
+                    ""type"": ""Button"",
+                    ""id"": ""c6853fd6-7018-46ea-9ac8-f79b8e553226"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -88,6 +133,105 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
                     ""action"": ""Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2d154971-ad12-4b58-acea-537568b142f4"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Up"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1cfb8c12-a417-4053-ba67-46f267a94a1d"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Up"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0fa1771f-7803-4bd4-929a-644976f06c81"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Down"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b336f54b-d462-4685-acd9-6dc2ddf32481"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Down"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""630aaf04-2379-4ba5-8a16-b40f83137272"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Left"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b303e65a-0c2d-4020-8e01-c2ca73551511"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Left"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""222caef4-c246-4215-bfc2-121371cad4f3"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Right"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3f14963d-b309-43a6-8034-ab84c75e88b2"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Right"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ca7470fc-c491-430c-b9e7-d6a7e769a571"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Back"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -96,7 +240,7 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
             ""id"": ""49c8f4c4-b11c-4764-8b48-c10e3dd5ee17"",
             ""actions"": [
                 {
-                    ""name"": ""New action"",
+                    ""name"": ""Back"",
                     ""type"": ""Button"",
                     ""id"": ""16ad51df-9fc6-4f83-8682-6cde6b92c004"",
                     ""expectedControlType"": ""Button"",
@@ -109,11 +253,11 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""1c4cfe32-ec42-40a3-877f-63dbc7d9c334"",
-                    ""path"": """",
+                    ""path"": ""<Keyboard>/escape"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""New action"",
+                    ""action"": ""Back"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -127,9 +271,14 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
         m_PlayerControl_Shoot = m_PlayerControl.FindAction("Shoot", throwIfNotFound: true);
         m_PlayerControl_Point = m_PlayerControl.FindAction("Point", throwIfNotFound: true);
         m_PlayerControl_Click = m_PlayerControl.FindAction("Click", throwIfNotFound: true);
+        m_PlayerControl_Up = m_PlayerControl.FindAction("Up", throwIfNotFound: true);
+        m_PlayerControl_Down = m_PlayerControl.FindAction("Down", throwIfNotFound: true);
+        m_PlayerControl_Left = m_PlayerControl.FindAction("Left", throwIfNotFound: true);
+        m_PlayerControl_Right = m_PlayerControl.FindAction("Right", throwIfNotFound: true);
+        m_PlayerControl_Back = m_PlayerControl.FindAction("Back", throwIfNotFound: true);
         // UIControl
         m_UIControl = asset.FindActionMap("UIControl", throwIfNotFound: true);
-        m_UIControl_Newaction = m_UIControl.FindAction("New action", throwIfNotFound: true);
+        m_UIControl_Back = m_UIControl.FindAction("Back", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -194,6 +343,11 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerControl_Shoot;
     private readonly InputAction m_PlayerControl_Point;
     private readonly InputAction m_PlayerControl_Click;
+    private readonly InputAction m_PlayerControl_Up;
+    private readonly InputAction m_PlayerControl_Down;
+    private readonly InputAction m_PlayerControl_Left;
+    private readonly InputAction m_PlayerControl_Right;
+    private readonly InputAction m_PlayerControl_Back;
     public struct PlayerControlActions
     {
         private @GameInput m_Wrapper;
@@ -201,6 +355,11 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
         public InputAction @Shoot => m_Wrapper.m_PlayerControl_Shoot;
         public InputAction @Point => m_Wrapper.m_PlayerControl_Point;
         public InputAction @Click => m_Wrapper.m_PlayerControl_Click;
+        public InputAction @Up => m_Wrapper.m_PlayerControl_Up;
+        public InputAction @Down => m_Wrapper.m_PlayerControl_Down;
+        public InputAction @Left => m_Wrapper.m_PlayerControl_Left;
+        public InputAction @Right => m_Wrapper.m_PlayerControl_Right;
+        public InputAction @Back => m_Wrapper.m_PlayerControl_Back;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControl; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -219,6 +378,21 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
+            @Up.started += instance.OnUp;
+            @Up.performed += instance.OnUp;
+            @Up.canceled += instance.OnUp;
+            @Down.started += instance.OnDown;
+            @Down.performed += instance.OnDown;
+            @Down.canceled += instance.OnDown;
+            @Left.started += instance.OnLeft;
+            @Left.performed += instance.OnLeft;
+            @Left.canceled += instance.OnLeft;
+            @Right.started += instance.OnRight;
+            @Right.performed += instance.OnRight;
+            @Right.canceled += instance.OnRight;
+            @Back.started += instance.OnBack;
+            @Back.performed += instance.OnBack;
+            @Back.canceled += instance.OnBack;
         }
 
         private void UnregisterCallbacks(IPlayerControlActions instance)
@@ -232,6 +406,21 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
+            @Up.started -= instance.OnUp;
+            @Up.performed -= instance.OnUp;
+            @Up.canceled -= instance.OnUp;
+            @Down.started -= instance.OnDown;
+            @Down.performed -= instance.OnDown;
+            @Down.canceled -= instance.OnDown;
+            @Left.started -= instance.OnLeft;
+            @Left.performed -= instance.OnLeft;
+            @Left.canceled -= instance.OnLeft;
+            @Right.started -= instance.OnRight;
+            @Right.performed -= instance.OnRight;
+            @Right.canceled -= instance.OnRight;
+            @Back.started -= instance.OnBack;
+            @Back.performed -= instance.OnBack;
+            @Back.canceled -= instance.OnBack;
         }
 
         public void RemoveCallbacks(IPlayerControlActions instance)
@@ -253,12 +442,12 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
     // UIControl
     private readonly InputActionMap m_UIControl;
     private List<IUIControlActions> m_UIControlActionsCallbackInterfaces = new List<IUIControlActions>();
-    private readonly InputAction m_UIControl_Newaction;
+    private readonly InputAction m_UIControl_Back;
     public struct UIControlActions
     {
         private @GameInput m_Wrapper;
         public UIControlActions(@GameInput wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Newaction => m_Wrapper.m_UIControl_Newaction;
+        public InputAction @Back => m_Wrapper.m_UIControl_Back;
         public InputActionMap Get() { return m_Wrapper.m_UIControl; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -268,16 +457,16 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_UIControlActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_UIControlActionsCallbackInterfaces.Add(instance);
-            @Newaction.started += instance.OnNewaction;
-            @Newaction.performed += instance.OnNewaction;
-            @Newaction.canceled += instance.OnNewaction;
+            @Back.started += instance.OnBack;
+            @Back.performed += instance.OnBack;
+            @Back.canceled += instance.OnBack;
         }
 
         private void UnregisterCallbacks(IUIControlActions instance)
         {
-            @Newaction.started -= instance.OnNewaction;
-            @Newaction.performed -= instance.OnNewaction;
-            @Newaction.canceled -= instance.OnNewaction;
+            @Back.started -= instance.OnBack;
+            @Back.performed -= instance.OnBack;
+            @Back.canceled -= instance.OnBack;
         }
 
         public void RemoveCallbacks(IUIControlActions instance)
@@ -300,9 +489,14 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
         void OnShoot(InputAction.CallbackContext context);
         void OnPoint(InputAction.CallbackContext context);
         void OnClick(InputAction.CallbackContext context);
+        void OnUp(InputAction.CallbackContext context);
+        void OnDown(InputAction.CallbackContext context);
+        void OnLeft(InputAction.CallbackContext context);
+        void OnRight(InputAction.CallbackContext context);
+        void OnBack(InputAction.CallbackContext context);
     }
     public interface IUIControlActions
     {
-        void OnNewaction(InputAction.CallbackContext context);
+        void OnBack(InputAction.CallbackContext context);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public interface IDraggable
@@ -11,4 +12,7 @@ public interface IDraggable
     void OnDragEnd();
     
     public bool IsDraggable { get; set; } 
+    
+    event Action OnWillBeDestroyed;
+
 }

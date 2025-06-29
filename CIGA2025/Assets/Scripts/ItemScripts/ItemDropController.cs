@@ -53,6 +53,19 @@ public class ItemDropController : MonoBehaviour
     [Tooltip("旋转速度（每秒圈数）范围")]
     public Vector2 rotationSpeedRange = new Vector2(0.5f, 2f);
     
+    private Coroutine _dropRoutine = null; // 【新增】用于引用协程，方便停止
+
+    
+    private void OnEnable()
+    {
+        GameFlowManager.OnGameStateChanged += HandleGameStateChanged;
+    }
+
+    private void OnDisable()
+    {
+        GameFlowManager.OnGameStateChanged -= HandleGameStateChanged;
+    }
+    
     void Start()
     {
         // 检查配置是否完整
@@ -73,8 +86,30 @@ public class ItemDropController : MonoBehaviour
         {
             pool.ValidateProbabilities();
         }
-
-        StartCoroutine(DropItemRoutine());
+    }
+    
+    // 【新增】处理游戏状态变化
+    private void HandleGameStateChanged(GameFlowManager.GameState newState)
+    {
+        if (newState == GameFlowManager.GameState.Gameplay)
+        {
+            // 如果是游戏状态，且当前没有在掉落，则开始掉落
+            if (_dropRoutine == null)
+            {
+                Debug.Log("[ItemDropController] 游戏开始，启动道具掉落！");
+                _dropRoutine = StartCoroutine(DropItemRoutine());
+            }
+        }
+        else
+        {
+            // 如果不是游戏状态，则停止掉落
+            if (_dropRoutine != null)
+            {
+                Debug.Log("[ItemDropController] 游戏暂停或结束，停止道具掉落。");
+                StopCoroutine(_dropRoutine);
+                _dropRoutine = null;
+            }
+        }
     }
 
     private System.Collections.IEnumerator DropItemRoutine()

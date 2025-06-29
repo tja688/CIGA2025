@@ -1,0 +1,409 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "ParamGroup",
+			"Name": "角度 X"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "ParamGroup",
+			"Name": "角度 Y"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "ParamGroup",
+			"Name": "角度 Z"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "ParamGroup",
+			"Name": "左眼 开闭"
+		},
+		{
+			"Id": "ParamEyeROpen2",
+			"GroupId": "ParamGroup",
+			"Name": "右眼 开闭"
+		},
+		{
+			"Id": "ParamEyeROpen3",
+			"GroupId": "ParamGroup",
+			"Name": "右眼 开闭"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "ParamGroup",
+			"Name": "右眼 开闭"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "ParamGroup",
+			"Name": "嘴 变形"
+		},
+		{
+			"Id": "ParamMouthForm2",
+			"GroupId": "ParamGroup",
+			"Name": "嘴 变小"
+		},
+		{
+			"Id": "ParamMouthOpenY",
+			"GroupId": "ParamGroup",
+			"Name": "嘴 开闭"
+		},
+		{
+			"Id": "ParamBreath",
+			"GroupId": "ParamGroup",
+			"Name": "呼吸"
+		},
+		{
+			"Id": "Param11",
+			"GroupId": "ParamGroup",
+			"Name": "td"
+		},
+		{
+			"Id": "ParamAngleX2",
+			"GroupId": "ParamGroup2",
+			"Name": "X"
+		},
+		{
+			"Id": "ParamAngleY2",
+			"GroupId": "ParamGroup2",
+			"Name": "Y"
+		},
+		{
+			"Id": "ParamAngleY3",
+			"GroupId": "ParamGroup2",
+			"Name": "z"
+		},
+		{
+			"Id": "ParamEyeROpen4",
+			"GroupId": "ParamGroup2",
+			"Name": "受击"
+		},
+		{
+			"Id": "ParamAngleZ6",
+			"GroupId": "ParamGroup2",
+			"Name": "手"
+		},
+		{
+			"Id": "ParamAngleZ2",
+			"GroupId": "ParamGroup2",
+			"Name": "动作"
+		},
+		{
+			"Id": "ParamAngleZ7",
+			"GroupId": "ParamGroup2",
+			"Name": "动作"
+		},
+		{
+			"Id": "ParamAngleZ3",
+			"GroupId": "ParamGroup2",
+			"Name": "动作"
+		},
+		{
+			"Id": "ParamAngleZ8",
+			"GroupId": "ParamGroup2",
+			"Name": "强壮"
+		},
+		{
+			"Id": "ParamAngleZ4",
+			"GroupId": "ParamGroup2",
+			"Name": "腿"
+		},
+		{
+			"Id": "ParamAngleZ5",
+			"GroupId": "ParamGroup2",
+			"Name": "腿"
+		},
+		{
+			"Id": "Param19",
+			"GroupId": "ParamGroup2",
+			"Name": "变身"
+		},
+		{
+			"Id": "Param20",
+			"GroupId": "ParamGroup2",
+			"Name": "变身"
+		},
+		{
+			"Id": "Param21",
+			"GroupId": "ParamGroup2",
+			"Name": "单手捶地"
+		},
+		{
+			"Id": "Param",
+			"GroupId": "ParamGroup2",
+			"Name": "BOSS物理"
+		},
+		{
+			"Id": "Param2",
+			"GroupId": "ParamGroup2",
+			"Name": "BOSS物理"
+		},
+		{
+			"Id": "Param3",
+			"GroupId": "ParamGroup2",
+			"Name": "头上物理"
+		},
+		{
+			"Id": "Param4",
+			"GroupId": "ParamGroup2",
+			"Name": "头上物理"
+		},
+		{
+			"Id": "Param5",
+			"GroupId": "ParamGroup2",
+			"Name": "冰x"
+		},
+		{
+			"Id": "Param6",
+			"GroupId": "ParamGroup2",
+			"Name": "冰y"
+		},
+		{
+			"Id": "Param9",
+			"GroupId": "ParamGroup2",
+			"Name": "冰z"
+		},
+		{
+			"Id": "Param10",
+			"GroupId": "ParamGroup2",
+			"Name": "冰t"
+		},
+		{
+			"Id": "Param7",
+			"GroupId": "ParamGroup2",
+			"Name": "冰物理"
+		},
+		{
+			"Id": "Param8",
+			"GroupId": "ParamGroup2",
+			"Name": "冰物理"
+		},
+		{
+			"Id": "Param12",
+			"GroupId": "ParamGroup3",
+			"Name": "流体1"
+		},
+		{
+			"Id": "Param13",
+			"GroupId": "ParamGroup3",
+			"Name": "流体1"
+		},
+		{
+			"Id": "Param14",
+			"GroupId": "ParamGroup3",
+			"Name": "流体2"
+		},
+		{
+			"Id": "Param15",
+			"GroupId": "ParamGroup3",
+			"Name": "流体2"
+		},
+		{
+			"Id": "Param16",
+			"GroupId": "ParamGroup3",
+			"Name": "流体3"
+		},
+		{
+			"Id": "Param17",
+			"GroupId": "ParamGroup3",
+			"Name": "流体3"
+		},
+		{
+			"Id": "Param18",
+			"GroupId": "ParamGroup3",
+			"Name": "参数36"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroup",
+			"GroupId": "",
+			"Name": "Folder 1"
+		},
+		{
+			"Id": "ParamGroup2",
+			"GroupId": "",
+			"Name": "Folder 2"
+		},
+		{
+			"Id": "ParamGroup3",
+			"GroupId": "",
+			"Name": "Folder 3"
+		}
+	],
+	"Parts": [
+		{
+			"Id": "Part",
+			"Name": "图层组1"
+		},
+		{
+			"Id": "Part18",
+			"Name": "形态2"
+		},
+		{
+			"Id": "Part2",
+			"Name": "形态2"
+		},
+		{
+			"Id": "Part3",
+			"Name": "捶地2"
+		},
+		{
+			"Id": "Part4",
+			"Name": "捶地1"
+		},
+		{
+			"Id": "Part5",
+			"Name": "冰冻"
+		},
+		{
+			"Id": "Part11",
+			"Name": "受击"
+		},
+		{
+			"Id": "Part12",
+			"Name": "默认"
+		},
+		{
+			"Id": "PartSketch0",
+			"Name": "[ 参考图 ]"
+		},
+		{
+			"Id": "Part26",
+			"Name": "火焰"
+		},
+		{
+			"Id": "Part20",
+			"Name": "技能火"
+		},
+		{
+			"Id": "Part22",
+			"Name": "受击火"
+		},
+		{
+			"Id": "Part23",
+			"Name": "火"
+		},
+		{
+			"Id": "Part24",
+			"Name": "火捶地2"
+		},
+		{
+			"Id": "Part25",
+			"Name": "火捶地1"
+		},
+		{
+			"Id": "Part27",
+			"Name": "流体"
+		},
+		{
+			"Id": "Part19",
+			"Name": "捶地2"
+		},
+		{
+			"Id": "Part34",
+			"Name": "表情"
+		},
+		{
+			"Id": "Part32",
+			"Name": "冰"
+		},
+		{
+			"Id": "Part33",
+			"Name": "表情"
+		},
+		{
+			"Id": "Part10",
+			"Name": "冰冻头上"
+		},
+		{
+			"Id": "Part21",
+			"Name": "表情"
+		},
+		{
+			"Id": "ArtMesh74_Skinning",
+			"Name": "手R(蒙皮)"
+		},
+		{
+			"Id": "ArtMesh75_Skinning2",
+			"Name": "手Y(蒙皮)"
+		},
+		{
+			"Id": "ArtMesh75_Skinning",
+			"Name": "手Y(蒙皮)"
+		},
+		{
+			"Id": "Part31",
+			"Name": "流体捶地2"
+		},
+		{
+			"Id": "Part28",
+			"Name": "流体技能状态"
+		},
+		{
+			"Id": "Part29",
+			"Name": "流体默认"
+		},
+		{
+			"Id": "Part30",
+			"Name": "流体捶地1"
+		},
+		{
+			"Id": "Part17",
+			"Name": "表情"
+		},
+		{
+			"Id": "Part6",
+			"Name": "冰冻主要表情"
+		},
+		{
+			"Id": "Part7",
+			"Name": "冰冻表情2"
+		},
+		{
+			"Id": "Part8",
+			"Name": "冰冻表情1"
+		},
+		{
+			"Id": "Part9",
+			"Name": "表情3"
+		},
+		{
+			"Id": "Part13",
+			"Name": "主要表情"
+		},
+		{
+			"Id": "Part14",
+			"Name": "表情2"
+		},
+		{
+			"Id": "Part15",
+			"Name": "表情3"
+		},
+		{
+			"Id": "Part16",
+			"Name": "头上"
+		}
+	],
+	"CombinedParameters": [
+		[
+			"ParamAngleX",
+			"ParamAngleY"
+		],
+		[
+			"ParamAngleX2",
+			"ParamAngleY2"
+		],
+		[
+			"Param",
+			"Param2"
+		],
+		[
+			"Param7",
+			"Param8"
+		]
+	]
+}

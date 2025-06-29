@@ -3,11 +3,11 @@ using UnityEngine;
 using System;
 using Cysharp.Threading.Tasks;
 using DamageNumbersPro;
-using DamageNumbersPro.Demo; // [新增] 引入DamageNumbersPro插件的命名空间
+using DamageNumbersPro.Demo;
 
 /// <summary>
 /// 管理Boss的生命值，提供受伤和持续伤害（灼烧）效果的接口。
-/// 已集成DamageNumbersPro插件以显示伤害数字。
+/// 已集成DamageNumbersPro插件以显示伤害数字，并能根据伤害值播放不同音效。
 /// </summary>
 public class BossHealth : MonoBehaviour
 {
@@ -15,10 +15,17 @@ public class BossHealth : MonoBehaviour
     [SerializeField] private float _maxHealth = 1000f;
     private float _currentHealth;
 
-    // [新增] 用于在编辑器中拖入伤害数字的预制件
     [Header("视觉效果")]
     [Tooltip("从DamageNumbersPro插件中选择一个伤害数字预制件")]
     [SerializeField] private DamageNumber damageNumberPrefab;
+
+    // 【新增】音效设置
+    [Header("音效设置")]
+    [Tooltip("单次受伤超过 50 时播放的音效")]
+    [SerializeField] private AudioConfigSO heavyDamageSound;
+    [Tooltip("单次受伤超过 30 时播放的音效")]
+    [SerializeField] private AudioConfigSO mediumDamageSound;
+
 
     public float CurrentHealth => _currentHealth;
     public float MaxHealth => _maxHealth;
@@ -27,8 +34,6 @@ public class BossHealth : MonoBehaviour
     public event Action OnDeath;
 
     private BossAnimationController _animationController;
-
-    // [新增] 用于缓存Boss的碰撞体
     private Collider2D bossCollider; 
 
     private void Awake()
@@ -36,7 +41,6 @@ public class BossHealth : MonoBehaviour
         _animationController = GetComponent<BossAnimationController>();
         _currentHealth = _maxHealth;
         
-        // [新增] 在开始时获取并缓存自身的碰撞体
         bossCollider = GetComponent<Collider2D>();
         if(bossCollider == null)
         {
@@ -53,16 +57,17 @@ public class BossHealth : MonoBehaviour
     {
         if (_currentHealth <= 0) return;
 
-        // [修改] 为了显示整数伤害，我们对伤害值取整
+        // 【修改】根据伤害值播放对应的音效
+        PlayDamageSound(damageAmount);
+
+        // 为了显示整数伤害，我们对伤害值取整
         int damageToShow = Mathf.RoundToInt(damageAmount);
         if (damageToShow <= 0) damageToShow = 1; // 至少显示1点伤害
 
         _currentHealth -= damageAmount;
         _currentHealth = Mathf.Max(_currentHealth, 0);
-
-        Debug.Log($"Boss 受到伤害: {damageAmount}, 当前血量: {_currentHealth}");
-
-        // [新增] 在Boss位置生成伤害数字
+        
+        // 在Boss位置生成伤害数字
         SpawnDamageNumber(damageToShow);
 
         OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
@@ -81,25 +86,40 @@ public class BossHealth : MonoBehaviour
     /// <param name="duration">持续时间（秒）</param>
     public async UniTask ApplyBurnOverTime(float totalDamage, float duration)
     {
+        // 灼烧伤害的每一跳会分别触发TakeDamage，如果单跳伤害超过阈值也会触发音效
         float damagePerTick = totalDamage / (duration * 10); // 每0.1秒造成一次伤害
         float elapsedTime = 0f;
-
-        Debug.Log($"Boss 开始受到灼烧效果，总伤害: {totalDamage}, 持续时间: {duration}秒");
-
+        
         while (elapsedTime < duration)
         {
             if (_currentHealth <= 0) break;
 
-            // 调用TakeDamage会自动处理伤害数字的显示，无需在此处额外操作
             TakeDamage(damagePerTick);
             await UniTask.Delay(TimeSpan.FromSeconds(0.1), ignoreTimeScale: false);
             elapsedTime += 0.1f;
         }
-        Debug.Log("Boss 灼烧效果结束");
     }
 
     /// <summary>
-    /// [修改] 生成伤害数字的核心方法
+    /// 【新增】根据伤害值播放音效的核心逻辑
+    /// </summary>
+    private void PlayDamageSound(float damageAmount)
+    {
+        // 优先检查高伤害
+        if (damageAmount > 50 && heavyDamageSound != null)
+        {
+            AudioManager.Instance.Play(heavyDamageSound);
+        }
+        // 再检查中等伤害
+        else if (damageAmount > 30 && mediumDamageSound != null)
+        {
+            AudioManager.Instance.Play(mediumDamageSound);
+        }
+    }
+
+
+    /// <summary>
+    /// 生成伤害数字的核心方法
     /// </summary>
     private void SpawnDamageNumber(float damageAmount)
     {
@@ -107,7 +127,6 @@ public class BossHealth : MonoBehaviour
 
         Vector3 spawnPosition;
 
-        // [修改] 如果成功获取了碰撞体，则在其包围盒内生成随机位置
         if (bossCollider != null)
         {
             Bounds bounds = bossCollider.bounds;
@@ -117,7 +136,7 @@ public class BossHealth : MonoBehaviour
                 UnityEngine.Random.Range(bounds.min.z, bounds.max.z)
             );
         }
-        else // 如果没有碰撞体，则使用旧的、固定的后备位置
+        else
         {
             spawnPosition = transform.position + Vector3.up * 1.0f;
         }

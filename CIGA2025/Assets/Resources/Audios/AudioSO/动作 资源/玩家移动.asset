@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8e9d431b7ea6a4ebb1625508f792df, type: 3}
+  m_Name: "\u73A9\u5BB6\u79FB\u52A8"
+  m_EditorClassIdentifier: 
+  mixerGroup: {fileID: 5450134333356430884, guid: 52b4ca43d9577af478d4c9703949dd66, type: 2}
+  audioClip: {fileID: 0}
+  isRandomVolume: 0
+  volume: 0.5
+  minVolume: 0.3
+  maxVolume: 0.7
+  useRandomPool: 1
+  applyRandomVolumeModifier: 1
+  volumeModifierMin: 0.8
+  volumeModifierMax: 1.2
+  audioPool:
+  - audioClip: {fileID: 8300000, guid: 386cb8f771c733d4b8ac54f8a03c67fe, type: 3}
+    volume: 0.2
+  - audioClip: {fileID: 8300000, guid: 13a552b8c826c9149a472f4d28ad68f3, type: 3}
+    volume: 0.2
+  - audioClip: {fileID: 8300000, guid: 63ec49413a3b4714ea7f2a5ea290f658, type: 3}
+    volume: 0.2
+  - audioClip: {fileID: 8300000, guid: a12e3c4ecba38c94793e15cd8b419a4b, type: 3}
+    volume: 0.2

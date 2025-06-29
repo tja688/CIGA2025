@@ -1,4 +1,6 @@
 // DraggableObject.cs
+
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))] 
@@ -12,6 +14,9 @@ public class DraggableObject : MonoBehaviour, IDraggable
     private Color originalColor;
     private SpriteRenderer spriteRenderer;
     private WanderController _wanderController; // 【新增】缓存 WanderController 的引用
+    
+    // 【新增】实现接口定义的事件
+    public event Action OnWillBeDestroyed;
     
     /// <summary>
     /// 【新增】控制此物体当前是否可被抓取。
@@ -75,5 +80,10 @@ public class DraggableObject : MonoBehaviour, IDraggable
         }
         // 当拖拽结束后，我们不自动恢复游荡。激活需要通过点击重新触发。
         Debug.Log($"{name} 拖拽结束!");
+    }
+
+    private void OnDestroy()
+    {
+        OnWillBeDestroyed?.Invoke();
     }
 }
