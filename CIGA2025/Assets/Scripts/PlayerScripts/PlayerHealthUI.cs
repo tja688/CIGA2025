@@ -24,9 +24,7 @@ public class PlayerHealthUI : MonoBehaviour
         // 每当血量变化时，PlayerHealth会“广播”这个事件，我们的UpdateHealthUI方法就会被自动调用。
         playerHealth.OnHealthChanged += UpdateHealthUI;
 
-        // 【可选】如果你想在游戏一开始就根据玩家的初始血量设置一次UI，可以取消下面的注释。
-        // 不过，在你提供的PlayerHealth脚本中，Start方法已经调用了OnHealthChanged事件，所以这一步通常是自动完成的。
-        // UpdateHealthUI(playerHealth.maxHealth); // 假设初始是满血
+        UpdateHealthUI(3); // 假设初始是满血
     }
 
     private void OnDestroy()

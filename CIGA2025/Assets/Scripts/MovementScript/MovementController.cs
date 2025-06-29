@@ -10,11 +10,16 @@ public class PlayerController : MonoBehaviour
     [Header("移动参数")]
     public float moveSpeed = 5f; 
 
+    // 【新增】音效配置
+    [Header("音效配置")]
+    [Tooltip("玩家移动一格时播放的音效")]
+    [SerializeField] private AudioConfigSO moveSound;
+
     // --- 内部状态变量 ---
     private Vector3Int _currentCellPos;
     private Vector3 _targetWorldPos;    
     private bool _isMoving = false;    
-    private bool _canMove = true; // 【修改】使用一个总的布尔值来控制移动能力
+    private bool _canMove = true;
     
     // --- 输入与动画 ---
     private GameInput _playerInputActions;
@@ -65,8 +70,6 @@ public class PlayerController : MonoBehaviour
         _targetWorldPos = GetWorldCenterPosition(_currentCellPos);
         transform.position = _targetWorldPos; 
         
-        // 假设游戏开始时是可移动状态
-        HandleGameStateChanged(GameFlowManager.GameState.Gameplay);
     }
     
     /// <summary>
@@ -80,7 +83,6 @@ public class PlayerController : MonoBehaviour
 
     /// <summary>
     /// 【核心公共方法】启用或禁用玩家的移动能力。
-    /// 这是外部脚本控制玩家移动的唯一入口。
     /// </summary>
     public void SetMovementEnabled(bool isEnabled)
     {
@@ -136,6 +138,13 @@ public class PlayerController : MonoBehaviour
             // 检查目标格子是否可以行走
             if (!IsCellWalkable(nextCellPos)) return;
             
+            // 【核心改动】在确认可以移动后，播放音效
+            if (moveSound != null && AudioManager.Instance != null)
+            {
+                // 播放一次性的移动音效，不循环
+                AudioManager.Instance.Play(moveSound, isLooping: false);
+            }
+
             // 更新目标位置并开始移动
             _currentCellPos = nextCellPos;
             _targetWorldPos = GetWorldCenterPosition(_currentCellPos);

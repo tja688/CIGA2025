@@ -1764,6 +1764,7 @@ GameObject:
   - component: {fileID: 9003543283231090493}
   - component: {fileID: 2663558461111610700}
   - component: {fileID: 6877093563380962356}
+  - component: {fileID: 7289381035936005600}
   m_Layer: 0
   m_Name: "\u949F"
   m_TagString: Live2d
@@ -2080,6 +2081,20 @@ MonoBehaviour:
   itemDamage: 1
   maxHitCount: 1
   itemMass: 1
+--- !u!114 &7289381035936005600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3940192897546034823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 409ab0641c225e44d9b28f56e389f08d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  destructionSounds:
+  - {fileID: 11400000, guid: 324543d694cc59946864f7f7a33b7821, type: 2}
 --- !u!1 &3946522845393856970
 GameObject:
   m_ObjectHideFlags: 0

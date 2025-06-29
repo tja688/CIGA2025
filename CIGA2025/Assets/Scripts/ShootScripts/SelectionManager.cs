@@ -1,11 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
-/// 负责处理游戏中“可选择对象”的框选逻辑和激活逻辑。
-/// 它会根据鼠标位置，在指定的层上查找实现了 ISelectable 接口的对象。
-/// 此管理器的核心逻辑仅在 PhotoModeManager 的拍照模式下激活。
-/// </summary>
 public class SelectionManager : MonoBehaviour
 {
     #region 单例模式 (Singleton)
@@ -18,6 +13,11 @@ public class SelectionManager : MonoBehaviour
     [SerializeField] private SelectionBoxController selectionBoxPrefab;
     [Tooltip("鼠标检测范围")]
     [SerializeField] private float selectionRadius = 1f;
+
+    // 【新增】音效配置
+    [Header("音效配置")]
+    [Tooltip("成功激活一个物体时播放的“拍照”音效。")]
+    [SerializeField] private AudioConfigSO activationSound;
     #endregion
 
     private SelectionBoxController _selectionBoxInstance;
@@ -71,34 +71,35 @@ public class SelectionManager : MonoBehaviour
             return;
         }
 
-        // --- 核心逻辑 ---
-
-        // 第1步：检测鼠标下方是否有可选择的对象
         Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         _currentSelectedObject = FindClosestSelectable(mouseWorldPos);
 
-        // 第2步：根据当前是否选中对象，更新框选框状态
         if (_currentSelectedObject != null)
         {
             _selectionBoxInstance.transform.position = _currentSelectedObject.SelectionBounds.center;
             _selectionBoxInstance.UpdateBounds(_currentSelectedObject.SelectionBounds);
             _selectionBoxInstance.SetVisible(true);
             
+            // 当玩家点击时
             if (_playerInputActions.PlayerControl.Click.WasPressedThisFrame())
             {
+                // 【新增】播放激活音效
+                if (activationSound != null && AudioManager.Instance != null)
+                {
+                    // 播放一次性音效，无需循环
+                    AudioManager.Instance.Play(activationSound, false);
+                }
+                
                 // 调用该物体的激活方法
                 _currentSelectedObject.OnActivate();
                 
-                // 【核心改动】通知 PhotoModeManager 播放 "Live" 动画
                 if (PhotoModeManager.Instance != null)
                 {
                     PhotoModeManager.Instance.TriggerLiveAnimation();
                 }
                 
-                // 拍照使用一个电池
                 BatteryManager.Instance.UseBattery(1);
                 
-                // 立即退出拍照模式并设置锁定，防止立即重入
                 if (PhotoModeManager.Instance != null)
                 {
                     PhotoModeManager.Instance.DeactivateAndLock();
@@ -113,11 +114,6 @@ public class SelectionManager : MonoBehaviour
     #endregion
 
     #region 私有辅助方法
-    /// <summary>
-    /// 在指定位置附近查找最近的、实现了 ISelectable 接口的对象。
-    /// </summary>
-    /// <param name="searchPosition">搜索的中心点</param>
-    /// <returns>找到的 ISelectable 对象，如果没找到则返回 null</returns>
     private ISelectable FindClosestSelectable(Vector2 searchPosition)
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(searchPosition, selectionRadius);
@@ -127,7 +123,6 @@ public class SelectionManager : MonoBehaviour
         foreach (var hit in hits)
         {
             ISelectable selectable = hit.GetComponent<ISelectable>();
-
             if (selectable != null && selectable.IsSelectionEnabled)
             {
                 float distance = Vector2.Distance(searchPosition, hit.transform.position);

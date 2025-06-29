@@ -4657,6 +4657,7 @@ GameObject:
   - component: {fileID: 6381696982770987287}
   - component: {fileID: 1762856684614441376}
   - component: {fileID: 6209183110613915519}
+  - component: {fileID: 3675808324590213459}
   m_Layer: 0
   m_Name: "\u706D\u706B\u5668"
   m_TagString: Live2d
@@ -4973,6 +4974,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e1d5ee9fe8412447b3ad3f55f5cf6a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3675808324590213459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8578793562254157958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 409ab0641c225e44d9b28f56e389f08d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  destructionSounds:
+  - {fileID: 11400000, guid: df270934ca7e8d740b0f963523172df5, type: 2}
 --- !u!1 &9183723640943507966
 GameObject:
   m_ObjectHideFlags: 0
