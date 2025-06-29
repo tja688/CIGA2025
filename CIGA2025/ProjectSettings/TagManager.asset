@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Target
   - Boss
+  - Live2d
   layers:
   - Default
   - TransparentFX

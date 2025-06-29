@@ -2,26 +2,28 @@
 
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem; // 仍然需要引用
+using UnityEngine.InputSystem;
 
 public class DragController : MonoBehaviour
 {
-    [SerializeField] private GameObject arrowPrefab; 
+    [SerializeField] private GameObject arrowPrefab;
     private Camera mainCamera;
     private ArrowView currentArrow;
     private IDraggable draggedObject;
     private GameInput playerInputActions;
 
+    // 【新增】用于存储拖拽物体的实际锚点Transform。
+    // 它可以是物体本身，也可以是其特定的子对象（如Live2D的Parameters）。
+    private Transform dragAnchor;
+
     private void Awake()
     {
         mainCamera = Camera.main;
-        // 在开始时就获取一次引用，避免在Update中反复访问单例
         playerInputActions = PlayerInputController.Instance.InputActions;
     }
 
     private void OnEnable()
     {
-        // 【核心改动】不再订阅C#事件，只是确保Action Map是启用的
         playerInputActions.PlayerControl.Enable();
     }
 
@@ -30,40 +32,23 @@ public class DragController : MonoBehaviour
         playerInputActions.PlayerControl.Disable();
     }
 
-private void Update()
+    private void Update()
     {
-        // 【核心改动】在每次更新的开始，首先检查正在拖拽的对象是否已被销毁。
-        // 这是为了处理物体在拖拽过程中因碰撞等原因被销毁的边界情况。
         if (draggedObject != null && (draggedObject as MonoBehaviour) == null)
         {
             Debug.Log("被拖拽的物体已在外部被销毁，自动清理拖拽状态。");
-
-            // 如果箭头还存在，销毁它
-            if (currentArrow != null)
-            {
-                Destroy(currentArrow.gameObject);
-                currentArrow = null;
-            }
-
-            // 清理对已销毁对象的引用，并将光标设为默认
-            draggedObject = null;
-            CursorManager.Instance.SetDefault();
-
-            // 清理完毕，立即结束本帧的Update，防止后续代码因对象不存在而报错
+            HandleDraggedObjectDestroyed(); // 使用现有清理方法
             return;
         }
-
-        // --- 以下是你的原始逻辑，保持不变 ---
 
         if (PhotoModeManager.Instance != null && PhotoModeManager.Instance.IsPhotoMode)
         {
             CancelDragIfNeeded();
-            // 在拍照模式下，不执行任何拖拽逻辑
             return;
         }
 
         Vector3 mouseWorldPos = GetMouseWorldPosition();
-        
+
         // 1. 处理拖拽开始
         if (playerInputActions.PlayerControl.Click.WasPressedThisFrame())
         {
@@ -78,24 +63,50 @@ private void Update()
                     {
                         draggedObject = draggable;
                         draggedObject.OnDragStart();
-                        
+
+                        // --- 【核心修改点】---
+                        // 在开始拖拽时，决定使用哪个Transform作为锚点
+                        // ---------------------
+                        // 检查被拖拽物体的标签是否为 "Live2d"
+                        if (draggedObject.transform.CompareTag("Live2d"))
+                        {
+                            // 如果是，则尝试查找名为 "Parameters" 的子对象
+                            Transform live2dAnchor = draggedObject.transform.Find("Parameters");
+                            if (live2dAnchor != null)
+                            {
+                                // 找到了，就将它设为锚点
+                                dragAnchor = live2dAnchor;
+                                Debug.Log($"检测到Live2d模型 '{draggedObject.transform.name}'，已将锚点设置为其子对象 'Parameters'。");
+                            }
+                            else
+                            {
+                                // 如果没找到，打印一个警告，并使用物体本身的Transform作为备用方案
+                                Debug.LogWarning($"Live2d模型 '{draggedObject.transform.name}' 没有找到名为 'Parameters' 的子对象作为锚点，将使用根对象位置。请检查模型结构。");
+                                dragAnchor = draggedObject.transform;
+                            }
+                        }
+                        else
+                        {
+                            dragAnchor = draggedObject.transform;
+                        }
+
+                        // 使用确定的锚点位置来更新箭头
                         GameObject arrowInstance = Instantiate(arrowPrefab);
                         currentArrow = arrowInstance.GetComponent<ArrowView>();
-                        currentArrow.UpdateArrow(draggedObject.transform.position, mouseWorldPos);
+                        currentArrow.UpdateArrow(dragAnchor.position, mouseWorldPos);
                     }
                 }
             }
         }
-        
+
         // 2. 处理拖拽结束
         if (playerInputActions.PlayerControl.Click.WasReleasedThisFrame())
         {
             if (draggedObject != null)
             {
                 draggedObject.OnDragEnd();
-                draggedObject = null;
-                Destroy(currentArrow.gameObject);
-                currentArrow = null;
+                // 【修改点】清理所有拖拽相关引用
+                ClearDragState();
             }
         }
 
@@ -103,13 +114,13 @@ private void Update()
         if (draggedObject != null)
         {
             draggedObject.OnDrag(mouseWorldPos);
-            currentArrow.UpdateArrow(draggedObject.transform.position, mouseWorldPos);
+            // 【修改点】持续使用正确的锚点更新箭头
+            currentArrow.UpdateArrow(dragAnchor.position, mouseWorldPos);
             CursorManager.Instance.SetGrab();
         }
         else
         {
             RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero);
-            // 悬停检查也应考虑 IsDraggable
             if (hit.collider != null)
             {
                 IDraggable draggable = hit.collider.GetComponent<IDraggable>();
@@ -128,44 +139,50 @@ private void Update()
             }
         }
     }
-    // 如果拍照模式开启，强制取消拖拽
+
     private void CancelDragIfNeeded()
     {
         if (draggedObject != null)
         {
             draggedObject.OnDragEnd();
-            draggedObject = null;
-            Destroy(currentArrow.gameObject);
-            currentArrow = null;
+            ClearDragState();
             CursorManager.Instance.SetDefault();
         }
     }
 
-    // 【新增】事件处理方法
     private void HandleDraggedObjectDestroyed()
     {
-        
-        if(draggedObject != null)
+        if (draggedObject != null)
         {
             draggedObject.OnWillBeDestroyed -= HandleDraggedObjectDestroyed;
         }
-
+        ClearDragState();
+        CursorManager.Instance.SetDefault();
+    }
+    
+    // 【新增】一个统一的清理方法，用于清除所有与拖拽相关的状态
+    private void ClearDragState()
+    {
         if (currentArrow != null)
         {
             Destroy(currentArrow.gameObject);
             currentArrow = null;
         }
-
         draggedObject = null;
-        CursorManager.Instance.SetDefault();
+        dragAnchor = null; // 确保锚点引用也被清除
+    }
+
+    private Vector3 GetMouseWorldPosition()
+
+    {
+
+        Vector2 mouseScreenPos = playerInputActions.PlayerControl.Point.ReadValue<Vector2>();
+
+        return mainCamera.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, mainCamera.nearClipPlane));
+
     }
     
-    private Vector3 GetMouseWorldPosition()
-    {
-        Vector2 mouseScreenPos = playerInputActions.PlayerControl.Point.ReadValue<Vector2>();
-        return mainCamera.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, mainCamera.nearClipPlane));
-    }
-
+    
     private void OnDestroy()
     {
         playerInputActions.PlayerControl.Disable();
