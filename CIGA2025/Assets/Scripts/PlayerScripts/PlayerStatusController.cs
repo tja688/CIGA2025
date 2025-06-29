@@ -1,7 +1,9 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Threading; // 引入线程命名空间以使用 CancellationTokenSource
+using System.Collections;
+using System.Threading;
+using UnityEngine.UI; // 引入线程命名空间以使用 CancellationTokenSource
 
 /// <summary>
 /// 统一管理玩家的状态效果和核心逻辑（如死亡）。
@@ -18,6 +20,12 @@ public class PlayerStatusController : MonoBehaviour
     public GameObject shieldVisualPrefab; 
     private bool _isShieldActive = false;
     private GameObject _currentShieldVisual;
+    
+    [Header("死亡效果")]
+    [Tooltip("玩家死亡时淡入的UI图像（如全屏黑色图片）")]
+    public Image deathScreenImage; 
+    [Tooltip("死亡图像淡入到完全不透明所需的时间（秒）")]
+    public float deathFadeDuration = 2.0f;
 
     // 用于管理和取消冻结任务的CancellationTokenSource
     private CancellationTokenSource _freezeCts;
@@ -26,6 +34,13 @@ public class PlayerStatusController : MonoBehaviour
     {
         _playerHealth = GetComponent<PlayerHealth>();
         _playerController = GetComponent<PlayerController>();
+        
+        // [新增] 初始化死亡屏幕为完全透明
+        if (deathScreenImage != null)
+        {
+            deathScreenImage.color = new Color(deathScreenImage.color.r, deathScreenImage.color.g, deathScreenImage.color.b, 0);
+            deathScreenImage.gameObject.SetActive(false); // 初始时禁用，优化性能
+        }
     }
 
     private void OnEnable()
@@ -172,15 +187,42 @@ public class PlayerStatusController : MonoBehaviour
 
         // 确保玩家不能再进行任何操作
         _playerController.SetMovementEnabled(false);
-        PlayerInputController.Instance.ActivateUIControls(); // 切换到UI输入，禁止游戏操作
+        
+        // [新增] 触发死亡屏幕淡入协程
+        if (deathScreenImage != null)
+        {
+            StartCoroutine(FadeInDeathScreenCoroutine(deathFadeDuration));
+        }
         
         // 禁用此脚本，防止进一步的状态改变
         this.enabled = false; 
+        
+    }
+    
+    /// <summary>
+    /// [新增] 使用协程控制死亡屏幕淡入。
+    /// </summary>
+    /// <param name="duration">淡入持续时间</param>
+    private IEnumerator FadeInDeathScreenCoroutine(float duration)
+    {
+        // 激活UI对象准备开始淡入
+        deathScreenImage.gameObject.SetActive(true);
+    
+        float elapsedTime = 0f;
+        Color startColor = deathScreenImage.color; // 此时alpha为0
+        Color endColor = new Color(startColor.r, startColor.g, startColor.b, 1);
 
-        // 在这里可以添加更多死亡逻辑，例如：
-        // 1. 播放死亡动画
-        // 2. 延迟几秒后显示游戏结束UI
-        // 3. 通知 GameFlowManager 改变游戏状态
-        // GameFlowManager.Instance.ChangeGameState(GameFlowManager.GameState.GameOver);
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            // 使用 Mathf.Lerp 平滑地计算当前帧的颜色
+            deathScreenImage.color = Color.Lerp(startColor, endColor, elapsedTime / duration);
+            // 等待下一帧
+            yield return null; 
+        }
+
+        // 循环结束后，确保最终颜色为完全不透明
+        deathScreenImage.color = endColor;
+        Debug.Log("死亡屏幕淡入完成。");
     }
 }
