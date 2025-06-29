@@ -107,6 +107,6 @@ public class EndingCutsceneController : MonoBehaviour
 
         Debug.Log("[EndingCutscene] 结局演出结束。");
         // 在这里，您可以添加演出结束后的逻辑，比如返回主菜单
-        // GameFlowManager.Instance.ReturnToMenu();
+        GameFlowManager.Instance.QuitGame();
     }
 }
