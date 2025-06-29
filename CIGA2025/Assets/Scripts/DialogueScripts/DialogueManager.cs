@@ -58,7 +58,7 @@ public class DialogueManager : MonoBehaviour
     private Queue<string> currentDialogueQueue = new Queue<string>();
     private bool isDialogueActive = false;
 
-    public void ShowDialogue(string[] messages)
+    public async UniTask ShowDialogue(string[] messages)
     {
         Log($"ShowDialogue() 被调用。当前是否正忙: {isDialogueActive}");
         if (isDialogueActive)
@@ -81,13 +81,13 @@ public class DialogueManager : MonoBehaviour
         Log($"已将 {messages.Length} 条消息入队。");
 
         // 启动一个统一的、从头管到尾的异步流程
-        ProcessDialogueQueueAsync().Forget();
+        await ProcessDialogueQueueAsync();
     }
 
     /// <summary>
     /// 【核心】使用一个完整的异步方法来管理整个对话流程
     /// </summary>
-    private async UniTaskVoid ProcessDialogueQueueAsync()
+    private async UniTask  ProcessDialogueQueueAsync()
     {
         isDialogueActive = true;
         Log("ProcessDialogueQueueAsync() - 对话序列开始，isDialogueActive = true。");
@@ -129,13 +129,10 @@ public class DialogueManager : MonoBehaviour
         Log("对话队列为空，准备结束序列。");
         await UniTask.Delay(TimeSpan.FromSeconds(delayBetweenLines)); // 播放完最后一句后也停顿一下
         
-        Log("UI面板渐隐开始...");
         await FadeCanvasGroupAsync(1, 0, fadeDuration);
-        Log("UI面板渐隐完成。");
         dialoguePanel.SetActive(false);
 
         isDialogueActive = false;
-        Log("对话序列结束，isDialogueActive = false。");
     }
 
     private async UniTask FadeCanvasGroupAsync(float startAlpha, float endAlpha, float duration)

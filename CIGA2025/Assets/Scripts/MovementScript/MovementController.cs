@@ -16,7 +16,10 @@ public class PlayerController : MonoBehaviour
     private static readonly int MoveY = Animator.StringToHash("MoveY");
     
     private GameInput _playerInputActions;
-
+    
+    // 【新增】一个标志位，用于控制玩家是否可以移动
+    private bool _canMove = false;
+    
     private void OnEnable()
     {
         if (_playerInputActions == null)
@@ -32,11 +35,16 @@ public class PlayerController : MonoBehaviour
         }
         
         _playerInputActions.PlayerControl.Enable();
+        
+        GameFlowManager.OnGameStateChanged += HandleGameStateChanged;
     }
 
     private void OnDisable()
     {
         _playerInputActions?.PlayerControl.Disable();
+        
+        GameFlowManager.OnGameStateChanged -= HandleGameStateChanged;
+
     }
 
 
@@ -61,9 +69,25 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+    
+    // 【新增】处理游戏状态变化
+    private void HandleGameStateChanged(GameFlowManager.GameState newState)
+    {
+        // 只有在Gameplay状态下才允许移动
+        _canMove = (newState == GameFlowManager.GameState.Gameplay);
+        
+        // 如果不是游戏状态，确保玩家停止移动
+        if (!_canMove)
+        {
+            _isMoving = false;
+            animator.SetBool(IsMoving, false);
+        }
+    }
 
     private void Update()
     {
+        if (!_canMove) return;
+        
         HandleMovement();
     }
 
