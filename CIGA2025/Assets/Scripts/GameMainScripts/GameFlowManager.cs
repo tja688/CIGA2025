@@ -1,6 +1,7 @@
 // GameFlowManager.cs
 using System;
 using UnityEngine;
+using Cysharp.Threading.Tasks; // 【新增】为使用 .Forget() 添加 UniTask 命名空间
 
 /// <summary>
 /// 管理游戏的核心流程，例如游戏的开始、结束和退出。
@@ -22,24 +23,21 @@ public class GameFlowManager : MonoBehaviour
 
     public GameState CurrentState { get; private set; }
     
-    // --- 【新增】背景音乐设置 ---
     [Header("背景音乐设置 (BGM)")]
     [Tooltip("主菜单界面循环播放的音乐")]
     public AudioConfigSO mainMenuMusic;
-    [Tooltip("主菜单界面循环播放的音乐")]
-    public AudioConfigSO openingCutsceneMusic;
     [Tooltip("主要游戏环节（Boss战）循环播放的音乐")]
     public AudioConfigSO gameplayMusic;
     [Tooltip("游戏结束界面循环播放的音乐")]
     public AudioConfigSO gameOverMusic;
     
-    // --- 【新增】用于追踪当前BGM音轨ID的变量 ---
     private int _currentBgmTrackId = -1;
 
-    // --- 你原来的代码 ---
     public bool IsGaming = false; 
     public EffectController objectWithEffect;
-    private string[] dialogueMessages = new string[] { /*...*/ };
+    
+    // dialogueMessages 变量现在可以考虑移除，因为对话已由 DialogueManager 统一处理
+    // private string[] dialogueMessages = new string[] { /*...*/ };
 
     private void Awake()
     {
@@ -70,7 +68,6 @@ public class GameFlowManager : MonoBehaviour
         CurrentState = newState;
         Debug.Log($"[GameFlowManager] 游戏状态切换到: {newState}");
         
-        // 【新增】调用BGM处理方法
         HandleBgmTransition(newState);
 
         OnGameStateChanged?.Invoke(newState);
@@ -78,17 +75,14 @@ public class GameFlowManager : MonoBehaviour
         IsGaming = (newState == GameState.Gameplay);
     }
     
-    // --- 【新增】处理BGM切换的逻辑 ---
     private void HandleBgmTransition(GameState newState)
     {
-        // 1. 如果当前有BGM正在播放，则平滑地停止它
         if (_currentBgmTrackId != -1 && AudioManager.Instance != null)
         {
-            AudioManager.Instance.Stop(_currentBgmTrackId, 1.0f); // 使用1秒淡出
+            AudioManager.Instance.Stop(_currentBgmTrackId, 1.0f);
             _currentBgmTrackId = -1;
         }
 
-        // 2. 根据新状态选择要播放的音乐
         AudioConfigSO musicToPlay = null;
         switch (newState)
         {
@@ -100,16 +94,27 @@ public class GameFlowManager : MonoBehaviour
                 break;
             case GameState.GameOver:
                 musicToPlay = gameOverMusic;
-                break;
-            case GameState.OpeningCutscene:
-                musicToPlay = openingCutsceneMusic;
+                
+                // --- 【新增代码】 ---
+                // 当进入游戏结束状态时，触发对话
+                if (DialogueManager.Instance != null)
+                {
+                    Log("检测到进入GameOver状态，正在触发胜利对话...");
+                    var victoryDialogue = new string[] { "我们。。。胜利了吗？" };
+                    // 调用对话系统的 ShowDialogue 方法，并使用 .Forget() 异步执行
+                    DialogueManager.Instance.ShowDialogue(victoryDialogue).Forget();
+                }
+                else
+                {
+                    Log("DialogueManager 实例未找到，无法显示胜利对话！", true);
+                }
+                // --- 新增代码结束 ---
+                
                 break;
         }
 
-        // 3. 如果为新状态配置了音乐，则循环播放它
         if (musicToPlay != null && AudioManager.Instance != null)
         {
-            // 使用1.5秒淡入，并循环播放，然后保存新的BGM音轨ID
             _currentBgmTrackId = AudioManager.Instance.Play(musicToPlay, isLooping: true, fadeInDuration: 1.5f);
         }
     }
@@ -127,6 +132,8 @@ public class GameFlowManager : MonoBehaviour
         UpdateGameState(GameState.Gameplay);
     }
 
+
+
     public void ReturnToMenu()
     {
         UpdateGameState(GameState.MainMenu);
@@ -140,5 +147,15 @@ public class GameFlowManager : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+
+    // 辅助Log方法，方便统一管理日志输出
+    private void Log(string message, bool isWarning = false)
+    {
+        string prefix = "[GameFlowManager] ";
+        if (isWarning)
+            Debug.LogWarning(prefix + message);
+        else
+            Debug.Log(prefix + message);
     }
 }
