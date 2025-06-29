@@ -3,10 +3,11 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using System.Collections.Generic;
 
 /// <summary>
 /// [最终版本] Boss 的核心AI，使用FSM（有限状态机）控制行为。
-/// 通过UniTask管理异步的攻击循环，并可被外部调用打断。
+/// 每次施放技能时，会从一个音效池中随机播放一个音效。
 /// </summary>
 [RequireComponent(typeof(BossHealth), typeof(SkillCaster), typeof(BossAnimationController))]
 public class BossAI : MonoBehaviour
@@ -22,6 +23,12 @@ public class BossAI : MonoBehaviour
     private bool _isStunned = false;
     private bool _isLoopRunning = false;
     
+    // --- 【修改】施法音效设置 ---
+    [Header("施法音效设置")]
+    [Tooltip("Boss每次施放技能时，会从这个列表中随机挑选一个音效播放（例如：吼叫、咏唱声）")]
+    public List<AudioConfigSO> skillCastSoundEffects;
+    // --- 【删除】不再需要时间间隔变量 ---
+
     void OnEnable()
     {
         GameFlowManager.OnGameStateChanged += HandleGameStateChanged;
@@ -89,13 +96,14 @@ public class BossAI : MonoBehaviour
         _currentPhase = newPhase;
         Debug.LogWarning($"=============== Boss 进入新阶段: {newPhase} ===============");
         
-        // [新增] 通知动画控制器更新当前的动画阶段主题！
         UpdateAnimationPhase(newPhase);
 
-        // [已修改] 根据你的要求，如果暂无转场动画，可以注释掉此行。
-        // _animationController.PlayPhaseTransition();
-        
-        // 这个延迟可以作为转场动画的播放时间，或者一个硬直的停顿
+        if (newPhase == BossPhase.Phase4_Ultimate)
+        {
+            GameFlowManager.Instance.UpdateGameState(GameFlowManager.GameState.GameOver);
+            return;
+        }
+
         await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: _cancellationTokenSource.Token);
 
         switch (newPhase)
@@ -110,12 +118,10 @@ public class BossAI : MonoBehaviour
                 Phase3_AttackCycle(_cancellationTokenSource.Token).Forget();
                 break;
             case BossPhase.Phase4_Ultimate:
-                Phase4_UltimateAttack().Forget();
                 break;
         }
     }
 
-    // [新增] 一个辅助方法，用来将Boss的逻辑阶段映射到动画阶段
     private void UpdateAnimationPhase(BossPhase bossPhase)
     {
         BossAnimationController.AnimPhase animPhase;
@@ -127,7 +133,7 @@ public class BossAI : MonoBehaviour
             case BossPhase.Phase2:
                 animPhase = BossAnimationController.AnimPhase.Fire;
                 break;
-            case BossPhase.Phase3: // P3狂暴模式复用火阶段动画
+            case BossPhase.Phase3:
                 animPhase = BossAnimationController.AnimPhase.Fire;
                 break;
             case BossPhase.Phase4_Ultimate:
@@ -144,12 +150,17 @@ public class BossAI : MonoBehaviour
 
     private async UniTask Phase1_AttackCycle(CancellationToken cancellationToken)
     {
+        // 【删除】不再需要启动并行的音效循环
         while (!cancellationToken.IsCancellationRequested)
         {
+            // --- 技能 1: 冰霜射线 ---
+            PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
             _animationController.PlayFrostBeamCast();
             await _skillCaster.CastFrostBeam(cancellationToken);
             await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: cancellationToken);
 
+            // --- 技能 2: 暴风雪 ---
+            PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
             _animationController.PlayBlizzardCast();
             await _skillCaster.CastBlizzard(cancellationToken);
             
@@ -165,14 +176,20 @@ public class BossAI : MonoBehaviour
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+            // --- 技能 1: 交替烈焰 ---
+            PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
             _animationController.PlayAlternatingFlamesCast();
             await _skillCaster.CastAlternatingFlames(cancellationToken);
             await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: cancellationToken);
             
+            // --- 技能 2: 烈焰波 ---
+            PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
             _animationController.PlayFlameWaveCast();
             await _skillCaster.CastFlameWave(cancellationToken);
             await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: cancellationToken);
 
+            // --- 技能 3: 地刺 ---
+            PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
             _animationController.PlayGroundSpikesCast();
             await _skillCaster.CastGroundSpikes(cancellationToken);
 
@@ -188,14 +205,20 @@ public class BossAI : MonoBehaviour
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+             // --- 技能 1: 冰霜射线 ---
+             PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
              _animationController.PlayFrostBeamCast();
              await _skillCaster.CastFrostBeam(cancellationToken);
              await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: cancellationToken);
 
+             // --- 技能 2: 烈焰波 ---
+             PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
              _animationController.PlayFlameWaveCast();
              await _skillCaster.CastFlameWave(cancellationToken);
              await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: cancellationToken);
 
+             // --- 技能 3: 地刺 ---
+             PlayRandomSkillSfx(); // 【修改】在施法前播放随机音效
              _animationController.PlayGroundSpikesCast();
              await _skillCaster.CastGroundSpikes(cancellationToken);
              
@@ -204,21 +227,28 @@ public class BossAI : MonoBehaviour
         }
     }
 
-    private async UniTask Phase4_UltimateAttack()
-    {
-         _animationController.PlayUltimateCharge();
-         await _skillCaster.CastUltimateAttack(
-            onPlayerFail: () => {
-                Debug.Log("GAME OVER");
-            },
-            onPlayerSucceed: () => {
-                Debug.Log("玩家获得最后一击的机会！");
-                _animationController.PlayStunned();
-            }
-         );
-    }
-
     #endregion
+
+    // --- 【新增】播放随机施法音效的辅助方法 ---
+    private void PlayRandomSkillSfx()
+    {
+        // 检查音效列表是否有效
+        if (skillCastSoundEffects == null || skillCastSoundEffects.Count == 0)
+        {
+            return; // 如果列表为空，则不执行任何操作
+        }
+
+        // 从列表中随机选择一个音效
+        int randomIndex = UnityEngine.Random.Range(0, skillCastSoundEffects.Count);
+        AudioConfigSO sfxToPlay = skillCastSoundEffects[randomIndex];
+
+        // 播放选中的音效（如果音效不为空）
+        if (sfxToPlay != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.Play(sfxToPlay);
+        }
+    }
+    // --- 【删除】旧的 PeriodicSfxLoop 方法 ---
 
     public async UniTask GetStunned(float duration)
     {
@@ -231,6 +261,8 @@ public class BossAI : MonoBehaviour
         _cancellationTokenSource = new CancellationTokenSource();
         
         _animationController.PlayStunned();
+        // 【建议】在被眩晕时也可以播放一个特定的随机音效
+        PlayRandomSkillSfx(); 
 
         await UniTask.Delay(TimeSpan.FromSeconds(duration));
 
@@ -259,8 +291,10 @@ public class BossAI : MonoBehaviour
         _cancellationTokenSource.Cancel();
         _animationController.PlayDeath();
         
-        // 死亡后可以禁用gameObject或者执行其他销毁逻辑
-        // this.gameObject.SetActive(false); 
+        if(GameFlowManager.Instance.CurrentState != GameFlowManager.GameState.GameOver)
+        {
+            GameFlowManager.Instance.UpdateGameState(GameFlowManager.GameState.GameOver);
+        }
     }
 
     private void OnDestroy()

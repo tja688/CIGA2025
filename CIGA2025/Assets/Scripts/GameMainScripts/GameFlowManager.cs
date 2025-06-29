@@ -10,13 +10,6 @@ public class GameFlowManager : MonoBehaviour
 {
     public static GameFlowManager Instance { get; private set; }
 
-    /// <summary>
-    /// 定义游戏的核心状态
-    /// MainMenu: 待机状态，在主菜单界面
-    /// OpeningCutscene: 开局演出
-    /// Gameplay: 游戏进行中（开战）
-    /// Gameover: 游戏结束演出
-    /// </summary>
     public enum GameState
     {
         MainMenu,
@@ -25,19 +18,26 @@ public class GameFlowManager : MonoBehaviour
         GameOver
     }
 
-    /// <summary>
-    /// 当游戏状态发生改变时触发的全局事件
-    /// </summary>
     public static event Action<GameState> OnGameStateChanged;
 
-    /// <summary>
-    /// 当前游戏状态
-    /// </summary>
     public GameState CurrentState { get; private set; }
     
-    // --- 以下是你原来的代码，保留即可 ---
-    public AudioConfigSO beginMusic;
-    public bool IsGaming = false; // 这个变量可以废弃，或与新状态关联
+    // --- 【新增】背景音乐设置 ---
+    [Header("背景音乐设置 (BGM)")]
+    [Tooltip("主菜单界面循环播放的音乐")]
+    public AudioConfigSO mainMenuMusic;
+    [Tooltip("主菜单界面循环播放的音乐")]
+    public AudioConfigSO openingCutsceneMusic;
+    [Tooltip("主要游戏环节（Boss战）循环播放的音乐")]
+    public AudioConfigSO gameplayMusic;
+    [Tooltip("游戏结束界面循环播放的音乐")]
+    public AudioConfigSO gameOverMusic;
+    
+    // --- 【新增】用于追踪当前BGM音轨ID的变量 ---
+    private int _currentBgmTrackId = -1;
+
+    // --- 你原来的代码 ---
+    public bool IsGaming = false; 
     public EffectController objectWithEffect;
     private string[] dialogueMessages = new string[] { /*...*/ };
 
@@ -56,7 +56,6 @@ public class GameFlowManager : MonoBehaviour
 
     private void Start()
     {
-        // 游戏启动时，进入“待机”状态
         UpdateGameState(GameState.MainMenu);
     }
 
@@ -71,31 +70,58 @@ public class GameFlowManager : MonoBehaviour
         CurrentState = newState;
         Debug.Log($"[GameFlowManager] 游戏状态切换到: {newState}");
         
-        // 广播事件，通知所有订阅者
-        OnGameStateChanged?.Invoke(newState);
+        // 【新增】调用BGM处理方法
+        HandleBgmTransition(newState);
 
-        // 你可以根据状态更新旧的 IsGaming 变量，以兼容其他可能用到它的逻辑
+        OnGameStateChanged?.Invoke(newState);
+        
         IsGaming = (newState == GameState.Gameplay);
     }
     
-    // --- 为了方便测试，我们加一个按键来开始游戏 ---
-    private void Update()
+    // --- 【新增】处理BGM切换的逻辑 ---
+    private void HandleBgmTransition(GameState newState)
     {
-        // 当在主菜单时，按下空格键开始游戏（这个之后可以改成UI按钮调用）
-        if (CurrentState == GameState.MainMenu && Input.GetKeyDown(KeyCode.Space))
+        // 1. 如果当前有BGM正在播放，则平滑地停止它
+        if (_currentBgmTrackId != -1 && AudioManager.Instance != null)
         {
-            // 在这里可以先进入开场演出，演出结束后再进入Gameplay
-            // 为快速见效，我们直接跳到“开战”状态
-            UpdateGameState(GameState.Gameplay);
+            AudioManager.Instance.Stop(_currentBgmTrackId, 1.0f); // 使用1秒淡出
+            _currentBgmTrackId = -1;
         }
 
-        // // --- 你原来的测试代码 ---
-        // if (Input.GetKeyDown(KeyCode.L)) { /*...*/ }
-        // if (Input.GetKeyDown(KeyCode.F)) { /*...*/ }
-        // if (Input.GetKeyDown(KeyCode.K)) { /*...*/ }
+        // 2. 根据新状态选择要播放的音乐
+        AudioConfigSO musicToPlay = null;
+        switch (newState)
+        {
+            case GameState.MainMenu:
+                musicToPlay = mainMenuMusic;
+                break;
+            case GameState.Gameplay:
+                musicToPlay = gameplayMusic;
+                break;
+            case GameState.GameOver:
+                musicToPlay = gameOverMusic;
+                break;
+            case GameState.OpeningCutscene:
+                musicToPlay = openingCutsceneMusic;
+                break;
+        }
+
+        // 3. 如果为新状态配置了音乐，则循环播放它
+        if (musicToPlay != null && AudioManager.Instance != null)
+        {
+            // 使用1.5秒淡入，并循环播放，然后保存新的BGM音轨ID
+            _currentBgmTrackId = AudioManager.Instance.Play(musicToPlay, isLooping: true, fadeInDuration: 1.5f);
+        }
     }
     
-    // 你可以创建一些公共方法给UI按钮等调用
+    private void Update()
+    {
+        if (CurrentState == GameState.MainMenu && Input.GetKeyDown(KeyCode.Space))
+        {
+            UpdateGameState(GameState.Gameplay);
+        }
+    }
+    
     public void StartGame()
     {
         UpdateGameState(GameState.Gameplay);
